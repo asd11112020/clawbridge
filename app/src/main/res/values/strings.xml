@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ClawBridge</string>
+    <string name="service_not_running">无障碍服务未启动</string>
+    <string name="service_running">服务运行中 :端口</string>
+    <string name="btn_open_accessibility">打开无障碍设置</string>
+    <string name="btn_start_server">启动服务</string>
+    <string name="btn_stop_server">停止服务</string>
+</resources>
