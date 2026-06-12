@@ -75,6 +75,16 @@ ClawBridge 注册为 Android **无障碍服务**，获得系统级权限：
 {"text": "搜索", "click": true}
 ```
 
+### `POST /open`
+直接启动 App（无需桌面点击）：
+```json
+{"package": "com.tencent.mm"}
+// 或按应用显示名称搜索
+{"name": "微信"}
+```
+
+通过包名（`package`）精确启动；通过名称（`name`）则在全量已安装应用中模糊搜索第一个匹配项。
+
 ## 安全
 
 - 只监听 `localhost`，外网无法访问

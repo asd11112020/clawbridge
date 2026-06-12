@@ -2,6 +2,8 @@ package com.clawbridge
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Path
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -151,6 +153,47 @@ class ClawBridgeService : AccessibilityService() {
             return node
         }
         return null
+    }
+
+    /**
+     * Launch an app by its package name.
+     * Returns true if the intent was sent successfully.
+     */
+    fun openApp(packageName: String): Boolean {
+        return try {
+            val intent = packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                startActivity(intent)
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Search installed apps with launcher activity by display name.
+     * Returns the package name of the first match (case-insensitive contains).
+     */
+    fun findAppByDisplayName(name: String): String? {
+        return try {
+            val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
+            val apps = packageManager.queryIntentActivities(mainIntent, 0)
+            for (app in apps) {
+                val label = app.loadLabel(packageManager).toString()
+                if (label.contains(name, ignoreCase = true)) {
+                    return app.activityInfo.packageName
+                }
+            }
+            null
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /** Get the current root as AccessibilityNodeInfo for reading */

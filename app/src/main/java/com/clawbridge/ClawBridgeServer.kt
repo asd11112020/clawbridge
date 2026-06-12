@@ -111,6 +111,7 @@ class ClawBridgeServer(
                 method == "POST" && path == "/text" -> setText(JSONObject(body))
                 method == "POST" && path == "/key" -> pressKey(JSONObject(body))
                 method == "POST" && path == "/find" -> findAndClick(JSONObject(body))
+                method == "POST" && path == "/open" -> openApp(JSONObject(body))
                 method == "OPTIONS" -> "{}" // CORS preflight
                 else -> """{"ok":false,"error":"unknown_endpoint","path":"$path"}"""
             }
@@ -159,6 +160,27 @@ class ClawBridgeServer(
         val key = params.getString("key")
         service.pressKey(key)
         return """{"ok":true}"""
+    }
+
+    private fun openApp(params: JSONObject): String {
+        val packageName = params.optString("package", "")
+        val appName = params.optString("name", "")
+
+        var pkg = packageName
+        if (pkg.isEmpty() && appName.isNotEmpty()) {
+            pkg = service.findAppByDisplayName(appName) ?: ""
+        }
+
+        if (pkg.isEmpty()) {
+            return """{"ok":false,"error":"no_package_or_name_provided"}"""
+        }
+
+        val ok = service.openApp(pkg)
+        return if (ok) {
+            """{"ok":true,"package":"$pkg"}"""
+        } else {
+            """{"ok":false,"error":"app_not_found_or_cannot_launch","package":"$pkg"}"""
+        }
     }
 
     private fun findAndClick(params: JSONObject): String {
