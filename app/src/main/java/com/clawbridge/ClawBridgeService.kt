@@ -3,7 +3,6 @@ package com.clawbridge
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Path
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -12,7 +11,6 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
-import android.view.WindowManager
 
 /**
  * Core accessibility service — the bridge between Android and OpenClaw.
