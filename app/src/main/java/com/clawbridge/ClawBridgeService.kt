@@ -12,6 +12,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import android.view.WindowManager
 
 /**
  * Core accessibility service — the bridge between Android and OpenClaw.
@@ -194,6 +195,77 @@ class ClawBridgeService : AccessibilityService() {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * Get the root node of the topmost visible app window (not system UI).
+     * Falls back to [rootInActiveWindow] when [windows] is unavailable.
+     *
+     * This is the fix for the "/open" problem: after launching an app via
+     * Intent, [rootInActiveWindow] still points to the old window, but
+     * [windows] contains the newly opened app's window.
+     */
+    fun getScreenRoot(): AccessibilityNodeInfo? {
+        // Prefer AccessibilityService.windows — it covers all visible windows
+        val allWindows = try {
+            windows
+        } catch (_: Exception) {
+            null
+        }
+
+        if (!allWindows.isNullOrEmpty()) {
+            // Score windows: prefer active/visible app windows over system overlays
+            var bestWindow: AccessibilityWindowInfo? = null
+            var bestScore = -1
+
+            for (win in allWindows) {
+                if (!win.isVisible) continue
+                val type = win.type
+                when {
+                    // Application windows are what we want
+                    type == AccessibilityWindowInfo.TYPE_APPLICATION -> {
+                        if (win.isActive && bestScore < 10) {
+                            bestWindow = win
+                            bestScore = 10
+                        } else if (bestScore < 8) {
+                            bestWindow = win
+                            bestScore = 8
+                        }
+                    }
+                    // Input method (keyboard) — low priority
+                    type == AccessibilityWindowInfo.TYPE_INPUT_METHOD -> {
+                        if (bestScore < 3) {
+                            bestWindow = win
+                            bestScore = 3
+                        }
+                    }
+                    // Overlay / accessibility overlays
+                    type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY -> {
+                        if (bestScore < 2) {
+                            bestWindow = win
+                            bestScore = 2
+                        }
+                    }
+                    // System windows (status bar, etc.) — last resort
+                    type == AccessibilityWindowInfo.TYPE_SYSTEM -> {
+                        if (bestScore < 1) {
+                            bestWindow = win
+                            bestScore = 1
+                        }
+                    }
+                }
+            }
+
+            val chosen = bestWindow
+            if (chosen != null) {
+                val root = chosen.root
+                // Don't recycle — caller owns the node
+                return root
+            }
+        }
+
+        // Fallback to the default active window
+        return rootInActiveWindow
     }
 
     /** Get the current root as AccessibilityNodeInfo for reading */

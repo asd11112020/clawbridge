@@ -129,8 +129,10 @@ class ClawBridgeServer(
     }
 
     private fun getScreenJson(): String {
-        val root = service.rootInActiveWindow
-        return NodeTreeDumper.dump(root, service.screenWidth, service.screenHeight).toString()
+        val root = service.getScreenRoot()
+        val result = NodeTreeDumper.dump(root, service.screenWidth, service.screenHeight).toString()
+        root?.recycle()
+        return result
     }
 
     private fun tap(params: JSONObject): String {
@@ -188,7 +190,7 @@ class ClawBridgeServer(
         val click = params.optBoolean("click", true)
 
         // Search the node tree for matching text
-        val root = service.rootInActiveWindow
+        val root = service.getScreenRoot()
         if (root == null || target.isEmpty()) {
             return """{"ok":false,"error":"no_root_or_empty_query"}"""
         }
@@ -196,6 +198,7 @@ class ClawBridgeServer(
         val matches = JSONObject()
         val items = org.json.JSONArray()
         findNodesByText(root, target, items)
+        root.recycle()
 
         if (click && items.length() > 0) {
             // Click the first match
