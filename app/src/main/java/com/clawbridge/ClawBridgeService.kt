@@ -204,7 +204,8 @@ class ClawBridgeService : AccessibilityService() {
      * [windows] contains the newly opened app's window.
      */
     fun getScreenRoot(): AccessibilityNodeInfo? {
-        // Prefer AccessibilityService.windows — it covers all visible windows
+        // Prefer AccessibilityService.windows — it covers all visible windows.
+        // We score windows by type: active application windows rank highest.
         val allWindows = try {
             windows
         } catch (_: Exception) {
@@ -212,20 +213,27 @@ class ClawBridgeService : AccessibilityService() {
         }
 
         if (!allWindows.isNullOrEmpty()) {
-            // Score windows: prefer active/visible app windows over system overlays
             var bestWindow: AccessibilityWindowInfo? = null
             var bestScore = -1
 
             for (win in allWindows) {
-                if (!win.isVisible) continue
                 val type = win.type
+                val bounds = android.graphics.Rect()
+                win.getBoundsInScreen(bounds)
+                // Skip near-zero-size windows (likely decorations or hidden overlays)
+                if (bounds.width() < 50 && bounds.height() < 50) continue
+
                 when {
-                    // Application windows are what we want
-                    type == AccessibilityWindowInfo.TYPE_APPLICATION -> {
-                        if (win.isActive && bestScore < 10) {
+                    // Active application window — top priority
+                    type == AccessibilityWindowInfo.TYPE_APPLICATION && win.isActive -> {
+                        if (bestScore < 10) {
                             bestWindow = win
                             bestScore = 10
-                        } else if (bestScore < 8) {
+                        }
+                    }
+                    // Any other application window
+                    type == AccessibilityWindowInfo.TYPE_APPLICATION -> {
+                        if (bestScore < 8) {
                             bestWindow = win
                             bestScore = 8
                         }
@@ -237,27 +245,19 @@ class ClawBridgeService : AccessibilityService() {
                             bestScore = 3
                         }
                     }
-                    // Overlay / accessibility overlays
+                    // Accessibility overlay
                     type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY -> {
                         if (bestScore < 2) {
                             bestWindow = win
                             bestScore = 2
                         }
                     }
-                    // System windows (status bar, etc.) — last resort
-                    type == AccessibilityWindowInfo.TYPE_SYSTEM -> {
-                        if (bestScore < 1) {
-                            bestWindow = win
-                            bestScore = 1
-                        }
-                    }
                 }
             }
 
-            val chosen = bestWindow
-            if (chosen != null) {
-                val root = chosen.root
-                // Don't recycle — caller owns the node
+            if (bestWindow != null) {
+                val root = bestWindow.root
+                // Don't recycle — caller owns the returned node
                 return root
             }
         }
