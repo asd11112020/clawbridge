@@ -1,21 +1,26 @@
 package com.clawbridge
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.accessibility.AccessibilityManager
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import android.app.Activity
 
 class MainActivity : Activity() {
 
     private val serverPort = 9876
     private var server: ClawBridgeServer? = null
+    private lateinit var prefs: SharedPreferences
 
     private lateinit var dotAccessibility: View
     private lateinit var textAccessibilityStatus: TextView
@@ -24,8 +29,14 @@ class MainActivity : Activity() {
     private lateinit var btnAccessibility: Button
     private lateinit var btnServer: Button
     private lateinit var imgLogo: BlinkingLogoView
+    private lateinit var spinnerTheme: Spinner
+
+    private val themeLabels = arrayOf("跟随系统", "浅色模式", "深色模式")
+    private val themeValues = intArrayOf(-1, Configuration.UI_MODE_NIGHT_NO, Configuration.UI_MODE_NIGHT_YES)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        prefs = getSharedPreferences("clawbridge_prefs", Context.MODE_PRIVATE)
+        applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -36,10 +47,47 @@ class MainActivity : Activity() {
         btnAccessibility = findViewById(R.id.btn_accessibility)
         btnServer = findViewById(R.id.btn_server)
         imgLogo = findViewById(R.id.img_logo)
+        spinnerTheme = findViewById(R.id.spinner_theme)
 
         btnAccessibility.setOnClickListener { openAccessibilitySettings() }
         btnServer.setOnClickListener { toggleServer() }
-        imgLogo.setOnClickListener { it as BlinkingLogoView; it.blink() }
+        imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, themeLabels)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerTheme.adapter = adapter
+
+        val savedTheme = prefs.getInt("theme_mode", 0)
+        spinnerTheme.setSelection(savedTheme)
+        spinnerTheme.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val saved = prefs.getInt("theme_mode", 0)
+                if (position != saved) {
+                    prefs.edit().putInt("theme_mode", position).apply()
+                    recreate()
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    private fun applyTheme() {
+        val themeMode = prefs.getInt("theme_mode", 0)
+        val nightMode = when (themeMode) {
+            1 -> Configuration.UI_MODE_NIGHT_NO
+            2 -> Configuration.UI_MODE_NIGHT_YES
+            else -> {
+                val sysMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                if (sysMode == Configuration.UI_MODE_NIGHT_YES) {
+                    Configuration.UI_MODE_NIGHT_YES
+                } else {
+                    Configuration.UI_MODE_NIGHT_NO
+                }
+            }
+        }
+        val config = Configuration(resources.configuration)
+        config.uiMode = nightMode or (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv())
+        resources.updateConfiguration(config, resources.displayMetrics)
     }
 
     override fun onResume() {
