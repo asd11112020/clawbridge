@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.view.accessibility.AccessibilityManager
@@ -32,7 +34,6 @@ class MainActivity : Activity() {
     private lateinit var spinnerTheme: Spinner
 
     private val themeLabels = arrayOf("跟随系统", "浅色模式", "深色模式")
-    private val themeValues = intArrayOf(-1, Configuration.UI_MODE_NIGHT_NO, Configuration.UI_MODE_NIGHT_YES)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = getSharedPreferences("clawbridge_prefs", Context.MODE_PRIVATE)
@@ -53,41 +54,60 @@ class MainActivity : Activity() {
         btnServer.setOnClickListener { toggleServer() }
         imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
 
+        val textHowto = findViewById<TextView>(R.id.text_howto)
+        textHowto.setOnLongClickListener {
+            startActivity(Intent(this, GameActivity::class.java))
+            true
+        }
+
         val adapter = ArrayAdapter(this, R.layout.spinner_item, themeLabels)
         adapter.setDropDownViewResource(R.layout.spinner_dropdown)
         spinnerTheme.adapter = adapter
 
         val savedTheme = prefs.getInt("theme_mode", 0)
         spinnerTheme.setSelection(savedTheme)
-        spinnerTheme.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val saved = prefs.getInt("theme_mode", 0)
-                if (position != saved) {
-                    prefs.edit().putInt("theme_mode", position).apply()
-                    recreate()
+
+        spinnerTheme.post {
+            spinnerTheme.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    val saved = prefs.getInt("theme_mode", 0)
+                    if (position != saved) {
+                        prefs.edit().putInt("theme_mode", position).apply()
+                        val intent = intent
+                        finish()
+                        overridePendingTransition(0, 0)
+                        startActivity(intent)
+                        overridePendingTransition(0, 0)
+                    }
                 }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
             }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
     }
 
     private fun applyTheme() {
         val themeMode = prefs.getInt("theme_mode", 0)
-        val nightMode = when (themeMode) {
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+        val targetNightMode = when (themeMode) {
             1 -> Configuration.UI_MODE_NIGHT_NO
             2 -> Configuration.UI_MODE_NIGHT_YES
             else -> {
                 val sysMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-                if (sysMode == Configuration.UI_MODE_NIGHT_YES) {
-                    Configuration.UI_MODE_NIGHT_YES
-                } else {
-                    Configuration.UI_MODE_NIGHT_NO
-                }
+                sysMode
             }
         }
-        val config = Configuration(resources.configuration)
-        config.uiMode = nightMode or (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv())
-        resources.updateConfiguration(config, resources.displayMetrics)
+
+        if (currentNightMode != targetNightMode) {
+            val config = Configuration(resources.configuration)
+            config.uiMode = targetNightMode or (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv())
+            val locale = resources.configuration.locale
+            if (locale != null) {
+                config.setLocale(locale)
+            }
+            @Suppress("DEPRECATION")
+            resources.updateConfiguration(config, resources.displayMetrics)
+        }
     }
 
     override fun onResume() {

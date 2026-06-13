@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>推箱子小游戏</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --line:#e5e7eb;
+      --text:#111827;
+      --sub:#6b7280;
+      --primary:#3b82f6;
+      --primary2:#2563eb;
+      --success:#16a34a;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --soft:#f3f4f6;
+      --wall:#475569;
+      --wall2:#334155;
+      --floor:#eef2f7;
+      --target:#ef4444;
+      --box:#c0841a;
+      --box2:#8a5a13;
+      --player:#2563eb;
+      --player2:#38bdf8;
+      --shadow:0 8px 24px rgba(15,23,42,.08);
+
+      --cell-size:42px;
+      --board-max-w:100%;
+      --desktop-sidebar:300px;
+      --desktop-gap:16px;
+      --theme-knob-left:4px;
+    }
+
+    html[data-theme="dark"]{
+      --bg:#0f172a;
+      --card:#111827;
+      --line:#263041;
+      --text:#e5e7eb;
+      --sub:#94a5b8;
+      --primary:#60a5fa;
+      --primary2:#3b82f6;
+      --success:#22c55e;
+      --warn:#fbbf24;
+      --danger:#f87171;
+      --soft:#172131;
+      --wall:#64748b;
+      --wall2:#334155;
+      --floor:#1e293b;
+      --target:#ef4444;
+      --box:#d4a017;
+      --box2:#8a5a13;
+      --player:#3b82f6;
+      --player2:#67e8f9;
+      --shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"Microsoft YaHei",Arial,sans-serif;
+      padding:16px;
+      transition:background .2s,color .2s;
+    }
+
+    .app{
+      max-width:1200px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:16px;
+    }
+
+    .panel,.game-panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .panel{ padding:16px; }
+    .game-panel{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    h1{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:28px;
+      letter-spacing:1px;
+    }
+
+    h2{ margin:0 0 10px; font-size:16px; }
+    h3{ margin:8px 0; font-size:14px; }
+
+    .desc{
+      color:var(--sub);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .stats{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .stat{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .stat .label{ color:var(--sub); font-size:12px; }
+    .stat .value{
+      margin-top:4px;
+      font-size:18px;
+      font-weight:700;
+      word-break:break-all;
+    }
+
+    .buttons{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    button,select,textarea,input{
+      border:none;
+      outline:none;
+      border-radius:12px;
+      font-size:14px;
+      padding:10px 12px;
+    }
+
+    button{
+      cursor:pointer;
+      font-weight:700;
+      transition:.15s;
+      background:var(--primary);
+      color:#fff;
+    }
+    button:hover{ transform:translateY(-1px); }
+    button.secondary{ background:#e5e7eb; color:#111827; }
+    html[data-theme="dark"] button.secondary{ background:#273449; color:#e5e7eb; }
+    button.success{ background:var(--success); color:#fff; }
+    button.warning{ background:var(--warn); color:#111827; }
+    button.danger{ background:var(--danger); color:#fff; }
+    button.dark{ background:#334155; color:#fff; }
+
+    button.loading{
+      opacity:.9;
+      cursor:progress;
+      filter:saturate(.9);
+    }
+
+    textarea,input,select{
+      width:100%;
+      background:#f9fafb;
+      color:#111827;
+      border:1px solid var(--line);
+    }
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] input,
+    html[data-theme="dark"] select{
+      background:#0f172a;
+      color:#e5e7eb;
+      border:1px solid var(--line);
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .left-tools,.right-tools{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .right-tools{
+      flex-wrap:nowrap;
+      min-width:0;
+    }
+    .right-tools #levelSelect{
+      min-width:180px;
+      max-width:260px;
+      flex:1 1 auto;
+    }
+    .right-tools button{
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+
+    #solveStatus{
+      font-size:12px;
+      color:var(--sub);
+      white-space:nowrap;
+    }
+
+    #gameBoardWrap{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:10px;
+      min-height:360px;
+      overflow:auto;
+      max-width: var(--board-max-w);
+      width:100%;
+      margin-inline:auto;
+    }
+
+    #gameBoard{
+      display:grid;
+      gap:2px;
+      justify-content:start;
+      align-content:start;
+      width:max-content;
+      margin:0 auto;
+    }
+
+    .cell{
+      width:var(--cell-size);
+      height:var(--cell-size);
+      border-radius:8px;
+      position:relative;
+      transition:transform .14s ease;
+    }
+
+    .wall{ background:linear-gradient(135deg,var(--wall),var(--wall2)); }
+    .floor,.target,.box,.player{ background:var(--floor); }
+
+    .target::after{
+      content:"";
+      position:absolute;
+      width:14px;height:14px;
+      border-radius:50%;
+      background:var(--target);
+      top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      box-shadow:0 0 0 5px rgba(239,68,68,.12);
+    }
+
+    .box::before{
+      content:"";
+      position:absolute;
+      inset:6px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--box),var(--box2));
+      box-shadow:inset 0 -4px 0 rgba(0,0,0,.12);
+    }
+    .box.on-target::before{ background:linear-gradient(135deg,#22c55e,#15803d); }
+
+    .player::before{
+      content:"";
+      position:absolute;
+      width:24px;height:24px;border-radius:50%;
+      top:9px;left:9px;
+      background:linear-gradient(135deg,var(--player2),var(--player));
+    }
+
+    .player.moved,.box.pushed{ animation:pop .16s ease; }
+    @keyframes pop{ 0%{ transform:scale(.92);} 100%{ transform:scale(1);} }
+
+    .mobile-controls{
+      display:grid;
+      grid-template-columns:64px 64px 64px;
+      grid-template-rows:52px 52px 52px;
+      gap:8px;
+      justify-content:center;
+    }
+    .mobile-controls button{
+      padding:0;
+      font-size:22px;
+      background:#e5e7eb;
+      color:#111827;
+    }
+    html[data-theme="dark"] .mobile-controls button{
+      background:#273449;
+      color:#e5e7eb;
+    }
+    .mobile-controls .empty{ visibility:hidden; }
+
+    .level-group-title{
+      margin-top:10px;
+      margin-bottom:8px;
+      color:var(--sub);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .clickable-title{ cursor:pointer; user-select:none; }
+    .clickable-title:hover{ text-decoration:underline; opacity:.92; }
+
+    .level-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
+      gap:8px;
+      margin-top:8px;
+    }
+    .level-btn{
+      border:none;
+      border-radius:10px;
+      padding:9px 0;
+      font-weight:700;
+      background:#e5e7eb;
+      color:#111827;
+      cursor:pointer;
+    }
+    html[data-theme="dark"] .level-btn{ background:#273449; color:#e5e7eb; }
+    .level-btn.active{ background:#3b82f6; color:#fff; }
+    .level-btn.done{ background:#16a34a; color:#fff; }
+
+    details{
+      margin-top:12px;
+      background:rgba(127,127,127,.05);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    details summary{
+      cursor:pointer;
+      font-weight:700;
+      user-select:none;
+    }
+
+    .mini{
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.6;
+      margin-top:8px;
+    }
+
+    .editor-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+      margin-top:10px;
+    }
+    .tool-btn.active{ outline:3px solid rgba(59,130,246,.25); }
+
+    #editorBoard{
+      display:grid;
+      gap:2px;
+      margin-top:10px;
+      justify-content:start;
+      overflow:auto;
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:8px;
+    }
+
+    .editor-cell{
+      width:28px;height:28px;border-radius:6px;cursor:pointer;position:relative;
+      border:1px solid rgba(0,0,0,.05);
+    }
+    .editor-floor{ background:var(--floor); }
+    .editor-wall{ background:linear-gradient(135deg,#475569,#334155); }
+    .editor-target{ background:var(--floor); }
+    .editor-target::after{
+      content:""; position:absolute; width:10px;height:10px;border-radius:50%;
+      background:#ef4444; top:50%;left:50%; transform:translate(-50%,-50%);
+    }
+    .editor-box{ background:var(--floor); }
+    .editor-box::before{
+      content:""; position:absolute; inset:4px; border-radius:6px;
+      background:linear-gradient(135deg,#c0841a,#8a5a13);
+    }
+    .editor-player{ background:var(--floor); }
+    .editor-player::before{
+      content:""; position:absolute; width:16px;height:16px;border-radius:50%;
+      background:linear-gradient(135deg,#38bdf8,#2563eb); top:5px;left:5px;
+    }
+
+    #confetti{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .confetti-piece{
+      position:absolute;
+      width:10px;height:16px;
+      opacity:.9;
+      animation:fall linear forwards;
+    }
+    @keyframes fall{
+      from{ transform:translateY(-30px) rotate(0deg); }
+      to{ transform:translateY(560px) rotate(720deg); opacity:0.15; }
+    }
+
+    .footer-tip{
+      margin-top:12px;
+      color:var(--sub);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    /* ===== 滑块：毛玻璃（去蓝色） ===== */
+    .theme-slider-wrap{
+      margin-top:10px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(148,163,184,.42);
+      background:linear-gradient(135deg, rgba(255,255,255,.70), rgba(241,245,249,.58));
+      backdrop-filter: blur(14px) saturate(130%);
+      -webkit-backdrop-filter: blur(14px) saturate(130%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.72),
+        0 8px 20px rgba(17,24,39,.10);
+    }
+    html[data-theme="dark"] .theme-slider-wrap{
+      border:1px solid rgba(148,163,184,.32);
+      background:linear-gradient(135deg, rgba(51,65,85,.38), rgba(15,23,42,.66));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 12px 28px rgba(0,0,0,.36);
+    }
+
+    .theme-slider-shell{
+      position:relative;
+      height:40px;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(148,163,184,.52);
+      background:linear-gradient(90deg, rgba(248,250,252,.78) 0%, rgba(241,245,249,.72) 50%, rgba(226,232,240,.74) 100%);
+    }
+    html[data-theme="dark"] .theme-slider-shell{
+      border-color:rgba(148,163,184,.42);
+      background:linear-gradient(90deg, rgba(51,65,85,.55) 0%, rgba(30,41,59,.60) 50%, rgba(15,23,42,.65) 100%);
+    }
+
+    .theme-knob{
+      position:absolute;
+      top:3px;
+      left:var(--theme-knob-left);
+      width:calc(33.333% - 6px);
+      height:32px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.36);
+      background:linear-gradient(135deg, rgba(255,255,255,.72), rgba(226,232,240,.48));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.72),
+        0 4px 12px rgba(15,23,42,.16);
+      transition:left .2s ease;
+      z-index:1;
+    }
+    html[data-theme="dark"] .theme-knob{
+      border-color:rgba(148,163,184,.30);
+      background:linear-gradient(135deg, rgba(148,163,184,.32), rgba(71,85,105,.26));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 6px 14px rgba(0,0,0,.34);
+    }
+
+    .theme-slider{
+      -webkit-appearance:none;
+      appearance:none;
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      margin:0;
+      background:transparent;
+      cursor:pointer;
+      z-index:3;
+    }
+    .theme-slider::-webkit-slider-runnable-track{ height:40px; background:transparent; }
+    .theme-slider::-webkit-slider-thumb{
+      -webkit-appearance:none; appearance:none;
+      width:0;height:0;border:0;background:transparent;box-shadow:none;
+      margin-top:20px;
+    }
+    .theme-slider::-moz-range-track{ height:40px;border:none;border-radius:999px;background:transparent; }
+    .theme-slider::-moz-range-thumb{ width:0;height:0;border:0;background:transparent;box-shadow:none; }
+
+    .theme-slider-inside-labels{
+      position:absolute;
+      inset:0;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      align-items:center;
+      text-align:center;
+      z-index:2;
+      pointer-events:none;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+
+    .theme-slider-label{
+      color:#111827;
+      border-radius:999px;
+      margin:0 6px;
+      padding:4px 6px;
+      pointer-events:auto;
+      cursor:pointer;
+      transition:all .16s ease;
+      user-select:none;
+      text-shadow:0 1px 0 rgba(255,255,255,.55);
+    }
+    html[data-theme="dark"] .theme-slider-label{
+      color:#f1f5f9;
+      text-shadow:0 1px 2px rgba(0,0,0,.65);
+    }
+
+    .theme-slider-label.active{
+      color:#0f172a !important;
+      background:rgba(255,255,255,.44);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.36);
+      transform:translateY(-.5px);
+    }
+    html[data-theme="dark"] .theme-slider-label.active{
+      color:#f8fafc !important;
+      background:rgba(148,163,184,.20);
+      box-shadow:inset 0 0 0 1px rgba(148,163,184,.28);
+    }
+
+    .custom-level-head{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .level-sort-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      user-select:none;
+    }
+
+    .level-sort-item.sortable{ cursor:grab; }
+    .level-sort-item small{ color:var(--sub); display:block; margin-top:3px; }
+
+    .level-sort-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .delete-level-btn{
+      padding:6px 10px;
+      font-size:12px;
+      border-radius:10px;
+      background:var(--danger);
+      color:#fff;
+      cursor:pointer;
+      border:none;
+    }
+    .rename-level-btn{
+      padding:6px 10px;
+      font-size:12px;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      cursor:pointer;
+      border:none;
+    }
+
+    .section-card{
+      margin-top:10px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(127,127,127,.04);
+    }
+
+    .option-row{
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--soft);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .option-row input[type="checkbox"]{
+      width:auto;
+      margin:0;
+      transform:scale(1.1);
+    }
+
+    .hidden{ display:none !important; }
+
+    @media (max-width:980px){
+      .app{ grid-template-columns:1fr; }
+    }
+    @media (max-width:860px){
+      .player::before{ width:20px;height:20px;top:7px;left:7px; }
+    }
+
+    @media (max-width:640px){
+      .topbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .right-tools{
+        width:100%;
+      }
+      .right-tools #levelSelect{
+        min-width:0;
+      }
+      #solveStatus{
+        white-space:normal;
+      }
+    }
+
+    @media (min-width:981px){
+      :root{
+        --desktop-sidebar:340px;
+        --desktop-gap:20px;
+        --board-max-w:1080px;
+      }
+      .app{
+        max-width:1500px;
+        grid-template-columns:var(--desktop-sidebar) minmax(0,1fr);
+        gap:var(--desktop-gap);
+      }
+      .panel,.game-panel{ border-radius:20px; }
+      .panel{ padding:18px; }
+      .game-panel{ padding:18px; }
+      #gameBoardWrap{ min-height:460px; }
+      .level-list{ grid-template-columns:repeat(auto-fill,minmax(48px,1fr)); }
+    }
+
+    @media (min-width:1440px){
+      :root{
+        --desktop-sidebar:360px;
+        --desktop-gap:22px;
+        --board-max-w:1180px;
+      }
+      .app{ max-width:1720px; }
+      #gameBoardWrap{ min-height:520px; }
+    }
+
+    @media (min-width:1920px){
+      :root{
+        --desktop-sidebar:400px;
+        --desktop-gap:24px;
+        --board-max-w:1240px;
+      }
+      .app{ max-width:1960px; }
+      #builtinLevelButtons,#customLevelButtons{
+        grid-template-columns:repeat(6,minmax(44px,1fr));
+      }
+      #gameBoardWrap{ min-height:560px; }
+    }
+
+    @media (min-width:2560px){
+      :root{ --board-max-w:1280px; }
+      .app{ max-width:2260px; }
+      #gameBoardWrap{ min-height:600px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <aside class="panel" id="sidebarPanel">
+      <h1>推箱子小游戏</h1>
+
+      <div class="desc" style="margin-top:10px;">
+        目标：把所有箱子推到红色目标点上。<br>
+        操作：方向键 / WASD / 触屏按钮。<br>
+        快捷键：R 重开，Z 撤销，H 提示，J 自动演示。
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="label">当前关卡</div><div class="value" id="levelText">1</div></div>
+        <div class="stat"><div class="label">步数</div><div class="value" id="stepsText">0</div></div>
+        <div class="stat"><div class="label">推箱次数</div><div class="value" id="pushesText">0</div></div>
+        <div class="stat"><div class="label">已通关</div><div class="value" id="doneText">0</div></div>
+        <div class="stat"><div class="label">计时</div><div class="value" id="timeText">0.00s</div></div>
+        <div class="stat"><div class="label">最佳成绩</div><div class="value" id="bestText">暂无</div></div>
+      </div>
+
+      <div class="buttons">
+        <button onclick="restartLevel()">重开本关</button>
+        <button class="secondary" onclick="undoMove()">撤销一步</button>
+        <button class="secondary" onclick="prevLevel()">上一关</button>
+        <button class="secondary" onclick="nextLevel()">下一关</button>
+        <button class="dark" onclick="showHint()">提示一步</button>
+        <button class="success" id="autoSolveBtn" onclick="autoSolveCurrent()">自动演示</button>
+      </div>
+
+      <div id="stackedGameMount" class="hidden"></div>
+      <div id="sidebarModules"></div>
+
+      <details id="settingsPanel">
+        <summary>设置</summary>
+
+        <div class="mini">主题设置</div>
+        <div class="theme-slider-wrap">
+          <div class="theme-slider-shell">
+            <div class="theme-knob" id="themeKnob"></div>
+            <input type="range" id="themeSlider" class="theme-slider" min="0" max="2" step="1" value="1"
+                   oninput="onThemeSliderInput(this.value)" />
+            <div class="theme-slider-inside-labels">
+              <span id="themeLabelLight" class="theme-slider-label" onclick="setThemeModeByLabel('light')">浅色</span>
+              <span id="themeLabelAuto" class="theme-slider-label" onclick="setThemeModeByLabel('auto')">跟随系统</span>
+              <span id="themeLabelDark" class="theme-slider-label" onclick="setThemeModeByLabel('dark')">深色</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini" style="margin-top:12px;">布局设置</div>
+        <label class="option-row">
+          <span>操作区上移</span>
+          <input type="checkbox" id="controlsTopToggle" onchange="toggleControlsTop(this.checked)">
+        </label>
+        <label class="option-row">
+          <span>游戏区置顶</span>
+          <input type="checkbox" id="gameAboveLevelsToggle" onchange="toggleGameAboveLevels(this.checked)">
+        </label>
+
+        <div class="mini" style="margin-top:12px;">关卡管理</div>
+        <div class="section-card">
+          <h3 id="customManageTitle" class="clickable-title" onclick="onCustomLevelsTitleClick()">扩展关卡</h3>
+          <div class="mini">可拖拽排序、重命名、删除。</div>
+          <div class="drag-list" id="customLevelSortList"></div>
+        </div>
+      </details>
+
+      <div class="footer-tip">
+        说明：<br>
+        - 扩展关卡排在主线之后，可拖拽排序、删除、重命名<br>
+        - 侧边栏固定顺序：关卡 / 存档 / 地图编辑器<br>
+        - 自动保存当前进度、最佳成绩、扩展关卡顺序、名称、操作区位置、布局位置
+      </div>
+    </aside>
+
+    <main class="game-panel" id="mainGamePanel">
+      <div id="confetti"></div>
+
+      <div class="topbar">
+        <div class="left-tools">
+          <strong id="levelTitle">第 1 关</strong>
+          <span id="levelTag" style="font-size:12px;color:var(--sub);"></span>
+          <span id="playModeTag" style="font-size:12px;color:var(--sub);"></span>
+          <span id="solveStatus"></span>
+        </div>
+
+        <div class="right-tools">
+          <select id="levelSelect"></select>
+          <button class="secondary" onclick="loadSelectedLevel()">跳转</button>
+        </div>
+      </div>
+
+      <div id="controlsTopMount"></div>
+      <div id="gameBoardWrap"><div id="gameBoard"></div></div>
+
+      <div id="controlsBottomMount">
+        <div class="mobile-controls" id="mobileControls">
+          <div class="empty"></div>
+          <button onclick="movePlayer(0,-1)">↑</button>
+          <div class="empty"></div>
+          <button onclick="movePlayer(-1,0)">←</button>
+          <button onclick="confirmRestartFromControls()">⟳</button>
+          <button onclick="movePlayer(1,0)">→</button>
+          <div class="empty"></div>
+          <button onclick="movePlayer(0,1)">↓</button>
+          <div class="empty"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <template id="levelsModuleTemplate">
+    <section data-module="levels">
+      <h2 style="margin-top:16px;">关卡选择（<span id="levelCountText">0</span>关）</h2>
+      <div class="level-group-title" id="builtinLevelTitle">主线关卡</div>
+      <div class="level-list" id="builtinLevelButtons"></div>
+
+      <div id="customLevelsSection">
+        <div class="custom-level-head">
+          <div class="level-group-title clickable-title" id="customLevelTitle" style="margin:0;" onclick="onCustomLevelsTitleClick()">扩展关卡</div>
+        </div>
+        <div class="mini" id="customEmptyTip" style="display:none;">当前还未添加扩展关卡</div>
+        <div class="level-list" id="customLevelButtons"></div>
+      </div>
+    </section>
+  </template>
+
+  <template id="saveModuleTemplate">
+    <details data-module="save">
+      <summary>存档导入导出</summary>
+      <div class="buttons">
+        <button class="secondary" onclick="saveGame(true)">手动存档</button>
+        <button class="danger" onclick="clearSave()">清空存档</button>
+        <button class="secondary" onclick="exportSave()">导出存档</button>
+        <button class="secondary" onclick="importSave()">导入存档</button>
+      </div>
+      <textarea id="saveDataBox" rows="5" placeholder="这里显示导出的存档文本，也可以粘贴存档后点击导入" style="margin-top:10px;"></textarea>
+    </details>
+  </template>
+
+  <template id="editorModuleTemplate">
+    <details data-module="editor">
+      <summary>地图编辑器</summary>
+      <div class="mini">点击工具后在网格上绘制。要求至少 1 个玩家、1 个箱子、1 个目标点，且箱子数=目标数。</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+        <input type="number" id="editorW" min="5" max="20" value="8" placeholder="宽">
+        <input type="number" id="editorH" min="5" max="20" value="8" placeholder="高">
+      </div>
+      <div class="buttons">
+        <button class="secondary" onclick="createEditorBoard()">新建画布</button>
+        <button class="secondary" onclick="clearEditorBoard()">清空地图</button>
+      </div>
+      <div class="editor-grid">
+        <button class="tool-btn active" id="tool-floor" onclick="setEditorTool('.')">地板</button>
+        <button class="tool-btn" id="tool-wall" onclick="setEditorTool('#')">墙</button>
+        <button class="tool-btn" id="tool-box" onclick="setEditorTool('B')">箱子</button>
+        <button class="tool-btn" id="tool-target" onclick="setEditorTool('T')">目标</button>
+        <button class="tool-btn" id="tool-player" onclick="setEditorTool('P')">玩家</button>
+      </div>
+      <div id="editorBoard"></div>
+      <div class="buttons">
+        <button class="secondary" onclick="exportEditorLevel()">导出关卡</button>
+        <button class="secondary" onclick="importEditorLevel()">导入关卡</button>
+        <button class="success" onclick="playEditorLevel()">试玩此关</button>
+        <button class="warning" onclick="addEditorLevelToGame()">加入游戏</button>
+      </div>
+      <textarea id="levelDataBox" rows="7" placeholder="导出的关卡文本会显示在这里，也可以粘贴关卡后点击导入" style="margin-top:10px;"></textarea>
+    </details>
+  </template>
+
+  <script>
+    const STORAGE_KEY = "sokoban_clean_deluxe_v10";
+    const THEME_KEY = "sokoban_theme_mode_v3";
+    const CONTROLS_TOP_KEY = "sokoban_controls_top_v1";
+    const GAME_ABOVE_LEVELS_KEY = "sokoban_game_above_levels_v1";
+
+    const DEFAULT_LEVELS = [
+      { id:"builtin_1", name:"入门", difficulty:"★", raw:["#######","#.....#","#..T..#","#..B..#","#..P..#","#.....#","#######"], builtIn:true },
+      { id:"builtin_2", name:"转角", difficulty:"★", raw:["########","#......#","#..T...#","#..#B..#","#..P...#","#......#","########"], builtIn:true },
+      { id:"builtin_3", name:"双箱练习", difficulty:"★★", raw:["########","#..T...#","#..B...#","#..#...#","#..B.T.#","#..P...#","########"], builtIn:true },
+      { id:"builtin_4", name:"走廊", difficulty:"★★", raw:["#########","#...T...#","#...B...#","#.###...#","#...P...#","#...B.T.#","#.......#","#########"], builtIn:true },
+      { id:"builtin_5", name:"回字", difficulty:"★★", raw:["#########","#..T.T..#","#..B.B..#","#..###..#","#...P...#","#.......#","#########"], builtIn:true },
+      { id:"builtin_6", name:"分流", difficulty:"★★★", raw:["##########","#...T....#","#...B....#","#.###.##.#","#...P.BT.#","#........#","##########"], builtIn:true },
+      { id:"builtin_7", name:"交错", difficulty:"★★★", raw:["##########","#..T..T..#","#..B..B..#","#..##.##.#","#....P...#","#........#","##########"], builtIn:true },
+      { id:"builtin_8", name:"小仓库", difficulty:"★★★", raw:["###########","#...T.....#","#...B.###.#","#...#.....#","#.P.#.B.T.#","#.........#","###########"], builtIn:true },
+      { id:"builtin_9", name:"绕行", difficulty:"★★★★", raw:["###########","#..T...T..#","#..B...B..#","#..###....#","#....P....#","#.........#","###########"], builtIn:true },
+      { id:"builtin_10", name:"对称", difficulty:"★★★★", raw:["############","#...T..T...#","#...B..B...#","#.###..###.#","#.....P....#","#..........#","############"], builtIn:true },
+      { id:"builtin_11", name:"窄门", difficulty:"★★★★", raw:["############","#..T....T..#","#..B.##.B..#","#..#....#..#","#..#P...#..#","#..........#","############"], builtIn:true },
+      { id:"builtin_12", name:"终局", difficulty:"★★★★★", raw:["#############","#...T...T...#","#...B.#.B...#","#.###.#.###.#","#.....P.....#","#...........#","#############"], builtIn:true }
+    ];
+
+    let levels = [];
+    let currentLevel = 0;
+    let board = [];
+    let player = {x:0,y:0};
+    let steps = 0;
+    let pushes = 0;
+    let history = [];
+    let completedLevels = [];
+    let bestRecords = {};
+    let originalTargets = [];
+    let isCustomPreviewMode = false;
+    let solverRunning = false;
+    let autoSolveAbort = false;
+    let timerMs = 0;
+    let timerInterval = null;
+    let levelStarted = false;
+    let levelStartPerf = 0;
+    let lastAnimatedPlayer = null;
+    let lastAnimatedBox = null;
+    let editorTool = ".";
+    let editorMap = [];
+    let currentTimingMode = "seconds";
+    let currentPreviewOnePushMode = false;
+    let previewRawLevel = null;
+    let systemThemeMedia = null;
+    let controlsTop = false;
+    let gameAboveLevels = false;
+
+    function uid(prefix="id"){
+      return prefix + "_" + Math.random().toString(36).slice(2,10) + "_" + Date.now().toString(36);
+    }
+
+    function getBuiltInLevels(){ return levels.filter(l => l.builtIn); }
+    function getCustomLevels(){ return levels.filter(l => !l.builtIn); }
+    function rebuildLevels(builtins, customs){ levels = [...builtins, ...customs]; }
+    function getAllLevels(){ return levels; }
+    function getLevelCount(){ return levels.length; }
+
+    function getLevelMeta(index){
+      const lv = levels[index];
+      if(!lv) return {name:"未知", difficulty:""};
+      return {name:lv.name || "未命名", difficulty:lv.difficulty || "扩展"};
+    }
+
+    function getCurrentLevelObj(){ return levels[currentLevel]; }
+
+    function getCustomDisplayIndexById(levelId){
+      const customs = getCustomLevels();
+      return customs.findIndex(l => l.id === levelId) + 1;
+    }
+
+    function buildTargetMap(levelIndex){
+      const raw = levels[levelIndex].raw;
+      originalTargets = raw.map(row => row.split("").map(ch => ch === "T"));
+    }
+
+    function buildTargetMapFromRaw(raw){
+      originalTargets = raw.map(row => row.split("").map(ch => ch === "T"));
+    }
+
+    function cellHasTarget(x,y){
+      return !!(originalTargets[y] && originalTargets[y][x]);
+    }
+
+    function parseLevel(levelIndex){
+      const raw = levels[levelIndex].raw;
+      parseRawLevel(raw);
+    }
+
+    function parseRawLevel(raw){
+      board = raw.map(row => row.split(""));
+      player = {x:0,y:0};
+      steps = 0;
+      pushes = 0;
+      history = [];
+      timerMs = 0;
+      levelStarted = false;
+      levelStartPerf = 0;
+      stopTimer();
+      lastAnimatedPlayer = null;
+      lastAnimatedBox = null;
+      autoSolveAbort = false;
+
+      for(let y=0;y<board.length;y++){
+        for(let x=0;x<board[y].length;x++){
+          if(board[y][x] === "P"){
+            player = {x,y};
+            board[y][x] = ".";
+          }
+        }
+      }
+    }
+
+    function restorePreviewLevel(){
+      if(!previewRawLevel) return;
+      buildTargetMapFromRaw(previewRawLevel);
+      parseRawLevel(previewRawLevel);
+      currentTimingMode = getTimingModeForCurrentLevel();
+      render();
+      autoSave();
+    }
+
+    function restoreState(state){
+      board = state.board.map(r => [...r]);
+      player = {...state.player};
+      steps = state.steps;
+      pushes = state.pushes;
+      timerMs = state.timerMs || 0;
+      levelStarted = !!state.levelStarted;
+      lastAnimatedPlayer = null;
+      lastAnimatedBox = null;
+
+      stopTimer();
+      if(levelStarted){
+        levelStartPerf = performance.now() - timerMs;
+        startTimer();
+      }
+
+      render();
+      autoSave();
+    }
+
+    function isInside(x,y){ return y >= 0 && y < board.length && x >= 0 && x < board[y].length; }
+    function getCell(x,y){ if(!isInside(x,y)) return "#"; return board[y][x]; }
+    function setCell(x,y,v){ if(isInside(x,y)) board[y][x] = v; }
+    function isWall(x,y){ return getCell(x,y) === "#"; }
+    function isBox(x,y){ return getCell(x,y) === "B"; }
+    function isEmptyForMove(x,y){ const c = getCell(x,y); return c === "." || c === "T"; }
+
+    function getTimingModeForCurrentLevel(){
+      if(!isCustomPreviewMode){
+        const lv = getCurrentLevelObj();
+        if(lv && lv.id === "builtin_1") return "hundredth";
+        return "seconds";
+      }
+      return currentPreviewOnePushMode ? "hundredth" : "seconds";
+    }
+
+    function formatTimeByMode(ms, mode, forceNonZero=false){
+      if(mode === "hundredth"){
+        let v = ms;
+        if(forceNonZero && v > 0 && v < 10) v = 10;
+        if(forceNonZero && v === 0) v = 10;
+        return `${(v / 1000).toFixed(2)}s`;
+      }
+      return `${Math.max(0, Math.ceil(ms / 1000))}s`;
+    }
+
+    function formatTime(ms){
+      return formatTimeByMode(ms, currentTimingMode, currentTimingMode === "hundredth");
+    }
+
+    function getExactTimeMs(){
+      if(levelStarted) return performance.now() - levelStartPerf;
+      return timerMs;
+    }
+
+    function startTimer(){
+      stopTimer();
+      timerInterval = setInterval(() => {
+        timerMs = performance.now() - levelStartPerf;
+        const el = document.getElementById("timeText");
+        if(el) el.textContent = formatTime(timerMs);
+      }, 10);
+    }
+
+    function stopTimer(){
+      if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    /* 修复点：允许自动演示驱动 movePlayer */
+    function movePlayer(dx,dy, options = {}){
+      const fromAuto = !!options.fromAuto;
+      if(solverRunning && !fromAuto) return;
+
+      const nx = player.x + dx;
+      const ny = player.y + dy;
+      if(isWall(nx,ny)) return;
+
+      const snapshot = {
+        board: board.map(r => [...r]),
+        player: {...player},
+        steps,
+        pushes,
+        timerMs: getExactTimeMs(),
+        levelStarted
+      };
+
+      if(!levelStarted){
+        levelStarted = true;
+        levelStartPerf = performance.now();
+        startTimer();
+      }
+
+      lastAnimatedPlayer = {x:nx,y:ny};
+      lastAnimatedBox = null;
+
+      if(isBox(nx,ny)){
+        const bx = nx + dx;
+        const by = ny + dy;
+        if(!isEmptyForMove(bx,by)) return;
+
+        history.push(snapshot);
+        setCell(bx,by,"B");
+        setCell(nx,ny,cellHasTarget(nx,ny) ? "T" : ".");
+        player.x = nx;
+        player.y = ny;
+        steps++;
+        pushes++;
+        lastAnimatedBox = {x:bx,y:by};
+        playPushSound();
+      }else if(isEmptyForMove(nx,ny)){
+        history.push(snapshot);
+        player.x = nx;
+        player.y = ny;
+        steps++;
+        playMoveSound();
+      }else{
+        return;
+      }
+
+      timerMs = getExactTimeMs();
+      render();
+      autoSave();
+
+      if(checkWin()){
+        timerMs = getExactTimeMs();
+        stopTimer();
+        if(currentTimingMode === "hundredth" && timerMs < 10) timerMs = 10;
+
+        const levelId = isCustomPreviewMode ? null : getCurrentLevelObj()?.id;
+        if(levelId && !completedLevels.includes(levelId)){
+          completedLevels.push(levelId);
+        }
+
+        updateBestRecord();
+        autoSave();
+        playWinSound();
+        createConfetti();
+
+        setTimeout(() => {
+          alert(
+            `恭喜通关！\n` +
+            `${getDisplayLevelName(currentLevel)}\n` +
+            `步数：${steps}\n` +
+            `推箱次数：${pushes}\n` +
+            `时间：${formatTime(timerMs)}`
+          );
+
+          if(isCustomPreviewMode){
+            restorePreviewLevel();
+            return;
+          }
+
+          if(currentLevel < getLevelCount() - 1){
+            currentLevel++;
+            loadLevel(currentLevel);
+          }else{
+            alert("你已经通关所有关卡！");
+          }
+        }, 120);
+      }
+    }
+
+    function checkWin(){
+      for(let y=0;y<board.length;y++){
+        for(let x=0;x<board[y].length;x++){
+          if(cellHasTarget(x,y) && getCell(x,y) !== "B") return false;
+        }
+      }
+      return true;
+    }
+
+    function getDisplayLevelName(index){
+      const lv = levels[index];
+      if(isCustomPreviewMode) return "编辑器试玩关卡";
+      if(!lv) return "未知关卡";
+      if(lv.builtIn){
+        return `第 ${index + 1} 关 · ${lv.name}${lv.difficulty ? " · " + lv.difficulty : ""}`;
+      }
+      const no = getCustomDisplayIndexById(lv.id);
+      return `扩展 ${no} · ${lv.name}`;
+    }
+
+    function getBoardWidthCap(){
+      const w = window.innerWidth;
+      if(w >= 2560) return 1280;
+      if(w >= 1920) return 1240;
+      if(w >= 1440) return 1180;
+      if(w >= 981)  return 1080;
+      return Infinity;
+    }
+
+    function getCellSizeByViewport(cols){
+      const w = window.innerWidth;
+      if(w <= 860) return 34;
+      if(w <= 980) return 42;
+      let base = 48;
+      if(w >= 1440) base = 52;
+      if(w >= 1920) base = 56;
+      const cap = getBoardWidthCap();
+      const maxByCap = Number.isFinite(cap) ? Math.floor((cap - (cols - 1) * 2 - 20) / cols) : base;
+      return Math.max(34, Math.min(base, maxByCap));
+    }
+
+    function render(){
+      if(!board.length || !board[0] || !board[0].length) return;
+
+      const gameBoard = document.getElementById("gameBoard");
+      const gameBoardWrap = document.getElementById("gameBoardWrap");
+      gameBoard.innerHTML = "";
+
+      const cols = board[0].length;
+      const size = getCellSizeByViewport(cols);
+      gameBoard.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+      document.documentElement.style.setProperty("--cell-size", `${size}px`);
+
+      if(gameBoardWrap){
+        const cap = getBoardWidthCap();
+        gameBoardWrap.style.maxWidth = Number.isFinite(cap) ? `${cap}px` : "100%";
+      }
+
+      for(let y=0;y<board.length;y++){
+        for(let x=0;x<board[y].length;x++){
+          const div = document.createElement("div");
+          div.classList.add("cell");
+
+          const hasPlayer = player.x === x && player.y === y;
+          const hasBox = getCell(x,y) === "B";
+          const hasTarget = cellHasTarget(x,y);
+          const isWallCell = getCell(x,y) === "#";
+
+          if(isWallCell){
+            div.classList.add("wall");
+          }else if(hasPlayer){
+            div.classList.add("player");
+            if(lastAnimatedPlayer && lastAnimatedPlayer.x === x && lastAnimatedPlayer.y === y) div.classList.add("moved");
+          }else if(hasBox){
+            div.classList.add("box");
+            if(lastAnimatedBox && lastAnimatedBox.x === x && lastAnimatedBox.y === y) div.classList.add("pushed");
+            if(hasTarget) div.classList.add("on-target");
+          }else if(hasTarget){
+            div.classList.add("target");
+          }else{
+            div.classList.add("floor");
+          }
+
+          gameBoard.appendChild(div);
+        }
+      }
+
+      const meta = getLevelMeta(currentLevel);
+      currentTimingMode = getTimingModeForCurrentLevel();
+
+      document.getElementById("levelText").textContent = isCustomPreviewMode ? "试玩" : (currentLevel + 1);
+      document.getElementById("stepsText").textContent = steps;
+      document.getElementById("pushesText").textContent = pushes;
+      document.getElementById("doneText").textContent = completedLevels.length;
+      document.getElementById("timeText").textContent = formatTime(timerMs);
+      document.getElementById("bestText").textContent = getBestText(currentLevel);
+      document.getElementById("levelTitle").textContent = isCustomPreviewMode ? "编辑器试玩" : (levels[currentLevel]?.builtIn ? `第 ${currentLevel + 1} 关` : `扩展 ${getCustomDisplayIndexById(levels[currentLevel]?.id)}`);
+      document.getElementById("levelTag").textContent = isCustomPreviewMode ? "" : `${meta.name}${meta.difficulty ? " · " + meta.difficulty : ""}`;
+      document.getElementById("playModeTag").textContent = isCustomPreviewMode ? "（编辑器试玩模式）" : "";
+      document.getElementById("levelSelect").value = String(currentLevel);
+
+      renderLevelButtons();
+      renderCustomLevelSortList();
+      updateThemeControls();
+      updateControlsTopUI();
+      updateGameAboveLevelsUI();
+      applyGameAboveLevels();
+    }
+
+    function getBestText(levelIndex){
+      if(isCustomPreviewMode) return "试玩不计入";
+      const lv = levels[levelIndex];
+      if(!lv) return "暂无";
+      const r = bestRecords[lv.id];
+      if(!r) return "暂无";
+      const mode = lv.id === "builtin_1" ? "hundredth" : "seconds";
+      return `${r.steps}步/${r.pushes}推/${formatTimeByMode(r.timeMs, mode, mode === "hundredth")}`;
+    }
+
+    function updateBestRecord(){
+      if(isCustomPreviewMode) return;
+      const lv = getCurrentLevelObj();
+      if(!lv) return;
+      const key = lv.id;
+      const old = bestRecords[key];
+      const now = {steps, pushes, timeMs: Math.round(timerMs)};
+      if(!old){ bestRecords[key] = now; return; }
+      const oldScore = old.steps * 100000000 + old.pushes * 100000 + old.timeMs;
+      const newScore = now.steps * 100000000 + now.pushes * 100000 + now.timeMs;
+      if(newScore < oldScore) bestRecords[key] = now;
+    }
+
+    function loadLevel(index){
+      if(index < 0 || index >= getLevelCount()) return;
+      isCustomPreviewMode = false;
+      currentPreviewOnePushMode = false;
+      previewRawLevel = null;
+      currentLevel = index;
+      buildTargetMap(index);
+      parseLevel(index);
+      currentTimingMode = getTimingModeForCurrentLevel();
+      setAutoSolveUI("", false);
+      render();
+      autoSave();
+    }
+
+    function restartLevel(){
+      if(isCustomPreviewMode) restorePreviewLevel();
+      else loadLevel(currentLevel);
+    }
+
+    function confirmRestartFromControls(){
+      if(confirm("确定要重开本关吗？")) restartLevel();
+    }
+
+    function prevLevel(){ if(currentLevel > 0) loadLevel(currentLevel - 1); }
+    function nextLevel(){ if(currentLevel < getLevelCount() - 1) loadLevel(currentLevel + 1); }
+
+    function undoMove(){
+      if(solverRunning) return;
+      if(history.length === 0) return;
+      const last = history.pop();
+      restoreState(last);
+      playUndoSound();
+    }
+
+    function saveGame(showMsg=false){
+      const saveData = {
+        currentLevel, board, player, steps, pushes, history,
+        completedLevels, bestRecords, levels,
+        timerMs, levelStarted, isCustomPreviewMode, originalTargets,
+        currentPreviewOnePushMode, previewRawLevel, controlsTop, gameAboveLevels
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+      if(showMsg) alert("游戏已存档！");
+    }
+
+    function autoSave(){ saveGame(false); }
+
+    function normalizeLevels(dataLevels){
+      if(Array.isArray(dataLevels) && dataLevels.length){
+        const merged = dataLevels.map((lv, i) => ({
+          id: lv.id || uid("level"),
+          name: lv.name || `关卡${i+1}`,
+          difficulty: lv.difficulty || (lv.builtIn ? "★" : "扩展"),
+          raw: Array.isArray(lv.raw) ? lv.raw : DEFAULT_LEVELS[Math.min(i, DEFAULT_LEVELS.length-1)].raw,
+          builtIn: !!lv.builtIn
+        }));
+        const builtins = merged.filter(l => l.builtIn);
+        const customs = merged.filter(l => !l.builtIn);
+        return [...builtins, ...customs];
+      }
+      return DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
+    }
+
+    function loadGame(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if(!raw){
+        completedLevels = [];
+        bestRecords = {};
+        levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
+        controlsTop = getSavedControlsTop();
+        gameAboveLevels = getSavedGameAboveLevels();
+        initLevelSelect();
+        renderSidebarModules();
+        applyControlsTop();
+        applyGameAboveLevels();
+        loadLevel(0);
+        return;
+      }
+
+      try{
+        const data = JSON.parse(raw);
+        completedLevels = Array.isArray(data.completedLevels) ? data.completedLevels : [];
+        bestRecords = data.bestRecords ?? {};
+        isCustomPreviewMode = !!data.isCustomPreviewMode;
+        currentPreviewOnePushMode = !!data.currentPreviewOnePushMode;
+        previewRawLevel = data.previewRawLevel ?? null;
+        levels = normalizeLevels(data.levels);
+        controlsTop = typeof data.controlsTop === "boolean" ? data.controlsTop : getSavedControlsTop();
+        gameAboveLevels = typeof data.gameAboveLevels === "boolean" ? data.gameAboveLevels : getSavedGameAboveLevels();
+
+        currentLevel = Math.max(0, Math.min((data.currentLevel ?? 0), levels.length - 1));
+
+        initLevelSelect();
+        renderSidebarModules();
+        applyControlsTop();
+        applyGameAboveLevels();
+
+        if(data.originalTargets) originalTargets = data.originalTargets;
+        else buildTargetMap(currentLevel);
+
+        board = data.board ?? [];
+        player = data.player ?? {x:0,y:0};
+        steps = data.steps ?? 0;
+        pushes = data.pushes ?? 0;
+        history = data.history ?? [];
+        timerMs = data.timerMs ?? 0;
+        levelStarted = !!data.levelStarted;
+        currentTimingMode = getTimingModeForCurrentLevel();
+
+        if(!board.length){
+          loadLevel(0);
+        }else{
+          if(levelStarted){
+            levelStartPerf = performance.now() - timerMs;
+            startTimer();
+          }
+          render();
+        }
+      }catch(e){
+        completedLevels = [];
+        bestRecords = {};
+        levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
+        controlsTop = getSavedControlsTop();
+        gameAboveLevels = getSavedGameAboveLevels();
+        initLevelSelect();
+        renderSidebarModules();
+        applyControlsTop();
+        applyGameAboveLevels();
+        loadLevel(0);
+      }
+    }
+
+    function clearSave(){
+      if(confirm("确定要清空所有存档吗？")){
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(THEME_KEY);
+        localStorage.removeItem(CONTROLS_TOP_KEY);
+        localStorage.removeItem(GAME_ABOVE_LEVELS_KEY);
+        completedLevels = [];
+        bestRecords = {};
+        levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
+        isCustomPreviewMode = false;
+        currentPreviewOnePushMode = false;
+        previewRawLevel = null;
+        controlsTop = false;
+        gameAboveLevels = false;
+        initTheme();
+        initLevelSelect();
+        renderSidebarModules();
+        applyControlsTop();
+        applyGameAboveLevels();
+        loadLevel(0);
+      }
+    }
+
+    function initLevelSelect(){
+      const select = document.getElementById("levelSelect");
+      if(!select) return;
+      select.innerHTML = "";
+      getAllLevels().forEach((lv, i) => {
+        const option = document.createElement("option");
+        option.value = i;
+        if(lv.builtIn){
+          option.textContent = `主线 · 第 ${i+1} 关`;
+        }else{
+          option.textContent = `扩展 · ${getCustomDisplayIndexById(lv.id)} - ${lv.name}`;
+        }
+        select.appendChild(option);
+      });
+    }
+
+    function loadSelectedLevel(){
+      const index = parseInt(document.getElementById("levelSelect").value, 10);
+      loadLevel(index);
+    }
+
+    function onCustomLevelsTitleClick(){
+      const customs = getCustomLevels();
+      if(!customs.length){
+        alert("当前还未添加扩展关卡。可在“地图编辑器”中创建并加入游戏。");
+        return;
+      }
+      const firstCustomIndex = levels.findIndex(l => !l.builtIn);
+      if(firstCustomIndex >= 0) loadLevel(firstCustomIndex);
+    }
+
+    function renderLevelButtons(){
+      const levelCountText = document.getElementById("levelCountText");
+      if(levelCountText) levelCountText.textContent = getLevelCount();
+
+      const builtinBox = document.getElementById("builtinLevelButtons");
+      const customBox = document.getElementById("customLevelButtons");
+      const customSection = document.getElementById("customLevelsSection");
+      const customEmptyTip = document.getElementById("customEmptyTip");
+
+      if(builtinBox) builtinBox.innerHTML = "";
+      if(customBox) customBox.innerHTML = "";
+
+      levels.forEach((lv, i) => {
+        const btn = document.createElement("button");
+        btn.className = "level-btn";
+        btn.textContent = lv.builtIn ? (i + 1) : getCustomDisplayIndexById(lv.id);
+        if(!isCustomPreviewMode && i === currentLevel) btn.classList.add("active");
+        if(completedLevels.includes(lv.id)) btn.classList.add("done");
+        btn.title = lv.builtIn ? `主线第 ${i+1} 关` : `扩展 ${getCustomDisplayIndexById(lv.id)} · ${lv.name}`;
+        btn.onclick = () => loadLevel(i);
+        if(lv.builtIn){
+          if(builtinBox) builtinBox.appendChild(btn);
+        }else{
+          if(customBox) customBox.appendChild(btn);
+        }
+      });
+
+      const hasCustom = getCustomLevels().length > 0;
+      if(customSection) customSection.style.display = "";
+      if(customEmptyTip) customEmptyTip.style.display = hasCustom ? "none" : "";
+      if(customBox) customBox.style.display = hasCustom ? "grid" : "none";
+    }
+
+    function renderCustomLevelSortList(){
+      const box = document.getElementById("customLevelSortList");
+      if(!box) return;
+      box.innerHTML = "";
+
+      const customs = getCustomLevels();
+      const builtins = getBuiltInLevels();
+
+      customs.forEach((lv, index) => {
+        const row = document.createElement("div");
+        row.className = "level-sort-item sortable";
+        row.dataset.id = lv.id;
+        row.draggable = true;
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div>扩展 ${index + 1} · ${lv.name}</div><small>${lv.difficulty || "扩展"} · 可拖拽</small>`;
+
+        const actions = document.createElement("div");
+        actions.className = "level-sort-actions";
+
+        const rename = document.createElement("button");
+        rename.className = "rename-level-btn";
+        rename.textContent = "重命名";
+        rename.onclick = (e) => {
+          e.stopPropagation();
+          renameCustomLevel(lv.id);
+        };
+
+        const handle = document.createElement("div");
+        handle.className = "drag-handle";
+        handle.textContent = "⋮⋮";
+
+        const del = document.createElement("button");
+        del.className = "delete-level-btn";
+        del.textContent = "删除";
+        del.onclick = (e) => {
+          e.stopPropagation();
+          deleteCustomLevel(lv.id);
+        };
+
+        actions.appendChild(rename);
+        actions.appendChild(handle);
+        actions.appendChild(del);
+        row.appendChild(left);
+        row.appendChild(actions);
+        box.appendChild(row);
+      });
+
+      let dragIndex = null;
+      Array.from(box.children).forEach((item, index) => {
+        item.addEventListener("dragstart", () => {
+          dragIndex = index;
+          item.classList.add("dragging");
+        });
+
+        item.addEventListener("dragend", () => {
+          item.classList.remove("dragging");
+        });
+
+        item.addEventListener("dragover", (e) => e.preventDefault());
+
+        item.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const dropIndex = index;
+          if(dragIndex === null || dragIndex === dropIndex) return;
+
+          const currentId = getCurrentLevelObj()?.id;
+          const customList = getCustomLevels().slice();
+          const moved = customList.splice(dragIndex, 1)[0];
+          customList.splice(dropIndex, 0, moved);
+
+          rebuildLevels(builtins, customList);
+          initLevelSelect();
+
+          if(currentId){
+            const newIndex = levels.findIndex(l => l.id === currentId);
+            if(newIndex >= 0) currentLevel = newIndex;
+          }
+
+          autoSave();
+          render();
+          dragIndex = null;
+        });
+      });
+    }
+
+    function renameCustomLevel(levelId){
+      const lv = levels.find(l => l.id === levelId && !l.builtIn);
+      if(!lv) return;
+      const no = getCustomDisplayIndexById(levelId);
+      const newName = prompt(`请输入新的关卡名称：\n当前：扩展 ${no} · ${lv.name}`, lv.name);
+      if(newName === null) return;
+      const trimmed = newName.trim();
+      if(!trimmed) return alert("关卡名称不能为空！");
+      lv.name = trimmed;
+      initLevelSelect();
+      render();
+      autoSave();
+    }
+
+    function deleteCustomLevel(levelId){
+      const target = levels.find(l => l.id === levelId && !l.builtIn);
+      if(!target) return;
+
+      const no = getCustomDisplayIndexById(levelId);
+      if(!confirm(`确定要删除扩展关卡「扩展 ${no} · ${target.name}」吗？`)) return;
+
+      const currentId = getCurrentLevelObj()?.id;
+      const builtins = getBuiltInLevels();
+      const customs = getCustomLevels().filter(l => l.id !== levelId);
+
+      const wasCurrent = currentId === levelId;
+
+      rebuildLevels(builtins, customs);
+
+      if(levels.length === 0){
+        levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
+        currentLevel = 0;
+      }else{
+        if(wasCurrent){
+          if(customs.length > 0) currentLevel = builtins.length;
+          else currentLevel = Math.max(0, builtins.length - 1);
+        }else if(currentId){
+          const idx = levels.findIndex(l => l.id === currentId);
+          currentLevel = idx >= 0 ? idx : 0;
+        }
+      }
+
+      initLevelSelect();
+      renderSidebarModules();
+      loadLevel(currentLevel);
+    }
+
+    function createConfetti(){
+      const box = document.getElementById("confetti");
+      box.innerHTML = "";
+      const colors = ["#3b82f6","#16a34a","#f59e0b","#ef4444","#8b5cf6"];
+      for(let i=0;i<36;i++){
+        const p = document.createElement("div");
+        p.className = "confetti-piece";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.animationDuration = (1.6 + Math.random() * 1.3) + "s";
+        box.appendChild(p);
+      }
+      setTimeout(() => box.innerHTML = "", 3200);
+    }
+
+    function audioCtx(){
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return null;
+      if(!window.__sokoAudioCtx) window.__sokoAudioCtx = new Ctx();
+      return window.__sokoAudioCtx;
+    }
+
+    function beep(freq=440, duration=0.05, type="sine", gainValue=0.03){
+      const ctx = audioCtx();
+      if(!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = gainValue;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    function playMoveSound(){ beep(500,0.03,"triangle",0.025); }
+    function playPushSound(){ beep(220,0.05,"square",0.04); }
+    function playUndoSound(){ beep(320,0.04,"sine",0.025); }
+    function playWinSound(){
+      beep(523,0.06,"triangle",0.04);
+      setTimeout(()=>beep(659,0.08,"triangle",0.04),70);
+      setTimeout(()=>beep(784,0.12,"triangle",0.045),150);
+    }
+
+    function exportSave(){
+      const data = localStorage.getItem(STORAGE_KEY) || "";
+      const box = document.getElementById("saveDataBox");
+      if(box) box.value = data;
+      alert("存档已导出到文本框。");
+    }
+    function importSave(){
+      const box = document.getElementById("saveDataBox");
+      const txt = box ? box.value.trim() : "";
+      if(!txt) return alert("请先粘贴存档文本。");
+      try{
+        JSON.parse(txt);
+        localStorage.setItem(STORAGE_KEY, txt);
+        loadGame();
+        alert("存档导入成功！");
+      }catch(e){
+        alert("存档格式无效！");
+      }
+    }
+
+    function setEditorTool(tool){
+      editorTool = tool;
+      document.querySelectorAll(".tool-btn").forEach(b => b.classList.remove("active"));
+      const map = { ".":"tool-floor", "#":"tool-wall", "B":"tool-box", "T":"tool-target", "P":"tool-player" };
+      const target = document.getElementById(map[tool]);
+      if(target) target.classList.add("active");
+    }
+
+    function createEditorBoard(){
+      const wEl = document.getElementById("editorW");
+      const hEl = document.getElementById("editorH");
+      const w = Math.max(5, Math.min(20, parseInt(wEl?.value,10) || 8));
+      const h = Math.max(5, Math.min(20, parseInt(hEl?.value,10) || 8));
+      editorMap = Array.from({length:h}, (_,y) =>
+        Array.from({length:w}, (_,x) => (x===0 || y===0 || x===w-1 || y===h-1) ? "#" : ".")
+      );
+      renderEditorBoard();
+    }
+
+    function clearEditorBoard(){
+      if(!editorMap.length) createEditorBoard();
+      for(let y=0;y<editorMap.length;y++){
+        for(let x=0;x<editorMap[y].length;x++){
+          editorMap[y][x] = (x===0 || y===0 || x===editorMap[y].length-1 || y===editorMap.length-1) ? "#" : ".";
+        }
+      }
+      renderEditorBoard();
+    }
+
+    function renderEditorBoard(){
+      const box = document.getElementById("editorBoard");
+      if(!box) return;
+      if(!editorMap.length) createEditorBoard();
+      box.innerHTML = "";
+      box.style.gridTemplateColumns = `repeat(${editorMap[0].length}, 28px)`;
+
+      for(let y=0;y<editorMap.length;y++){
+        for(let x=0;x<editorMap[y].length;x++){
+          const c = editorMap[y][x];
+          const div = document.createElement("div");
+          div.className = "editor-cell " + editorCellClass(c);
+          div.onclick = () => paintEditorCell(x,y);
+          box.appendChild(div);
+        }
+      }
+    }
+
+    function editorCellClass(c){
+      if(c === "#") return "editor-wall";
+      if(c === "B") return "editor-box";
+      if(c === "T") return "editor-target";
+      if(c === "P") return "editor-player";
+      return "editor-floor";
+    }
+
+    function paintEditorCell(x,y){
+      if(!editorMap.length) return;
+      if(editorTool === "P"){
+        for(let yy=0;yy<editorMap.length;yy++){
+          for(let xx=0;xx<editorMap[yy].length;xx++){
+            if(editorMap[yy][xx] === "P") editorMap[yy][xx] = ".";
+          }
+        }
+      }
+      editorMap[y][x] = editorTool;
+      renderEditorBoard();
+    }
+
+    function validateLevel(raw){
+      let playerCount = 0, boxCount = 0, targetCount = 0;
+      const width = raw[0].length;
+      for(const row of raw){
+        if(row.length !== width) return {ok:false,msg:"每一行长度必须一致"};
+        for(const ch of row){
+          if(!["#",".","B","T","P"].includes(ch)) return {ok:false,msg:"存在非法字符，只允许 # . B T P"};
+          if(ch === "P") playerCount++;
+          if(ch === "B") boxCount++;
+          if(ch === "T") targetCount++;
+        }
+      }
+      if(playerCount !== 1) return {ok:false,msg:"玩家 P 必须且只能有 1 个"};
+      if(boxCount < 1) return {ok:false,msg:"至少要有 1 个箱子 B"};
+      if(targetCount < 1) return {ok:false,msg:"至少要有 1 个目标 T"};
+      if(boxCount !== targetCount) return {ok:false,msg:"箱子数量必须等于目标数量"};
+      return {ok:true};
+    }
+
+    function exportEditorLevel(){
+      if(!editorMap.length) return;
+      const raw = editorMap.map(r => r.join(""));
+      const box = document.getElementById("levelDataBox");
+      if(box) box.value = JSON.stringify(raw, null, 2);
+      alert("关卡已导出到文本框。");
+    }
+
+    function importEditorLevel(){
+      const box = document.getElementById("levelDataBox");
+      const txt = box ? box.value.trim() : "";
+      if(!txt) return alert("请先粘贴关卡文本。");
+      try{
+        const raw = JSON.parse(txt);
+        if(!Array.isArray(raw) || !raw.length) return alert("关卡格式错误，应为字符串数组。");
+        const valid = validateLevel(raw);
+        if(!valid.ok) return alert("关卡无效：" + valid.msg);
+        editorMap = raw.map(r => r.split(""));
+        const wEl = document.getElementById("editorW");
+        const hEl = document.getElementById("editorH");
+        if(wEl) wEl.value = raw[0].length;
+        if(hEl) hEl.value = raw.length;
+        renderEditorBoard();
+        alert("关卡导入成功！");
+      }catch(e){
+        alert("关卡文本格式错误！");
+      }
+    }
+
+    function cloneBoardSimple(b){ return b.map(r => [...r]); }
+
+    function boardToStateKey(p, b){
+      const boxes = [];
+      for(let y=0;y<b.length;y++){
+        for(let x=0;x<b[y].length;x++){
+          if(b[y][x] === "B") boxes.push(`${x},${y}`);
+        }
+      }
+      boxes.sort();
+      return `${p.x},${p.y}|${boxes.join(";")}`;
+    }
+
+    function isWallB(b,x,y){
+      if(y < 0 || y >= b.length || x < 0 || x >= b[y].length) return true;
+      return b[y][x] === "#";
+    }
+
+    function isBoxB(b,x,y){
+      if(y < 0 || y >= b.length || x < 0 || x >= b[y].length) return false;
+      return b[y][x] === "B";
+    }
+
+    function buildTargetMapForRaw(raw){
+      return raw.map(row => row.split("").map(ch => ch === "T"));
+    }
+
+    function checkWinBoardWithTargets(b, targetMap){
+      for(let y=0;y<b.length;y++){
+        for(let x=0;x<b[y].length;x++){
+          if(targetMap[y] && targetMap[y][x] && b[y][x] !== "B") return false;
+        }
+      }
+      return true;
+    }
+
+    function isEmptyBWithTargets(b,x,y,targetMap){
+      if(y < 0 || y >= b.length || x < 0 || x >= b[y].length) return false;
+      return b[y][x] === "." || (targetMap[y] && targetMap[y][x] && b[y][x] !== "#");
+    }
+
+    function parseBoardFromRaw(raw){
+      const b = raw.map(r => r.split(""));
+      let p = {x:0,y:0};
+      for(let y=0;y<b.length;y++){
+        for(let x=0;x<b[y].length;x++){
+          if(b[y][x] === "P"){
+            p = {x,y};
+            b[y][x] = ".";
+          }
+        }
+      }
+      return {board:b, player:p};
+    }
+
+    function canSolveInOnePush(raw){
+      const targetMap = buildTargetMapForRaw(raw);
+      const parsed = parseBoardFromRaw(raw);
+      const b = parsed.board;
+      const p = parsed.player;
+      const dirs = [{dx:0,dy:-1},{dx:0,dy:1},{dx:-1,dy:0},{dx:1,dy:0}];
+
+      for(const d of dirs){
+        const nx = p.x + d.dx;
+        const ny = p.y + d.dy;
+        const bx = nx + d.dx;
+        const by = ny + d.dy;
+
+        if(isWallB(b,nx,ny)) continue;
+        if(!isBoxB(b,nx,ny)) continue;
+        if(!isEmptyBWithTargets(b,bx,by,targetMap)) continue;
+
+        const copy = cloneBoardSimple(b);
+        copy[by][bx] = "B";
+        copy[ny][nx] = (targetMap[ny] && targetMap[ny][nx]) ? "T" : ".";
+        if(checkWinBoardWithTargets(copy, targetMap)) return true;
+      }
+      return false;
+    }
+
+    function previewEditorLevel(){
+      const raw = editorMap.map(r => r.join(""));
+      const valid = validateLevel(raw);
+      if(!valid.ok) return alert("关卡无效：" + valid.msg);
+
+      previewRawLevel = raw.map(r => r);
+      isCustomPreviewMode = true;
+      currentPreviewOnePushMode = canSolveInOnePush(raw);
+      buildTargetMapFromRaw(raw);
+      parseRawLevel(raw);
+      currentTimingMode = getTimingModeForCurrentLevel();
+      render();
+      autoSave();
+    }
+
+    function playEditorLevel(){ previewEditorLevel(); }
+
+    function addEditorLevelToGame(){
+      const raw = editorMap.map(r => r.join(""));
+      const valid = validateLevel(raw);
+      if(!valid.ok) return alert("关卡无效：" + valid.msg);
+
+      levels.push({
+        id: uid("custom"),
+        name: `扩展关卡 ${getCustomLevels().length + 1}`,
+        difficulty: "扩展",
+        raw,
+        builtIn: false
+      });
+
+      initLevelSelect();
+      renderLevelButtons();
+      renderCustomLevelSortList();
+      autoSave();
+      alert("已加入游戏关卡列表！");
+    }
+
+    function isTargetB(x,y){ return !!(originalTargets[y] && originalTargets[y][x]); }
+    function isEmptyB(b,x,y){
+      if(y < 0 || y >= b.length || x < 0 || x >= b[y].length) return false;
+      return b[y][x] === "." || b[y][x] === "T";
+    }
+
+    function checkWinB(b){
+      for(let y=0;y<b.length;y++){
+        for(let x=0;x<b[y].length;x++){
+          if(isTargetB(x,y) && b[y][x] !== "B") return false;
+        }
+      }
+      return true;
+    }
+
+    function tryMoveState(state, dx, dy){
+      const b = cloneBoardSimple(state.board);
+      const p = {...state.player};
+      const nx = p.x + dx, ny = p.y + dy;
+      if(isWallB(b,nx,ny)) return null;
+
+      if(isBoxB(b,nx,ny)){
+        const bx = nx + dx, by = ny + dy;
+        if(!isEmptyB(b,bx,by)) return null;
+        b[by][bx] = "B";
+        b[ny][nx] = isTargetB(nx,ny) ? "T" : ".";
+        p.x = nx; p.y = ny;
+      }else if(isEmptyB(b,nx,ny)){
+        p.x = nx; p.y = ny;
+      }else{
+        return null;
+      }
+
+      return { board:b, player:p };
+    }
+
+    function findSolutionBFS(limit=35000){
+      const start = { board: cloneBoardSimple(board), player:{...player}, path:[] };
+      const queue = [start];
+      let head = 0;
+      const visited = new Set([boardToStateKey(start.player,start.board)]);
+      const dirs = [
+        {dx:0,dy:-1,ch:"U"},
+        {dx:0,dy:1,ch:"D"},
+        {dx:-1,dy:0,ch:"L"},
+        {dx:1,dy:0,ch:"R"}
+      ];
+
+      let count = 0;
+      while(head < queue.length){
+        const cur = queue[head++];
+        count++;
+        if(count > limit) return null;
+        if(checkWinB(cur.board)) return cur.path;
+
+        for(const d of dirs){
+          const next = tryMoveState(cur, d.dx, d.dy);
+          if(!next) continue;
+          const key = boardToStateKey(next.player,next.board);
+          if(visited.has(key)) continue;
+          visited.add(key);
+          queue.push({ ...next, path:[...cur.path, d.ch] });
+        }
+      }
+      return null;
+    }
+
+    function findSolutionBFSAsync(limit=120000, chunkSize=1400, onProgress){
+      return new Promise((resolve) => {
+        const start = { board: cloneBoardSimple(board), player:{...player}, path:[] };
+        const queue = [start];
+        let head = 0;
+        const visited = new Set([boardToStateKey(start.player,start.board)]);
+        const dirs = [
+          {dx:0,dy:-1,ch:"U"},
+          {dx:0,dy:1,ch:"D"},
+          {dx:-1,dy:0,ch:"L"},
+          {dx:1,dy:0,ch:"R"}
+        ];
+
+        let count = 0;
+        const loop = () => {
+          let iter = 0;
+          while(head < queue.length && iter < chunkSize){
+            if(autoSolveAbort){
+              resolve(null);
+              return;
+            }
+            const cur = queue[head++];
+            count++;
+            if(count > limit){
+              resolve(null);
+              return;
+            }
+            if(checkWinB(cur.board)){
+              resolve(cur.path);
+              return;
+            }
+            for(const d of dirs){
+              const next = tryMoveState(cur, d.dx, d.dy);
+              if(!next) continue;
+              const key = boardToStateKey(next.player,next.board);
+              if(visited.has(key)) continue;
+              visited.add(key);
+              queue.push({ ...next, path:[...cur.path, d.ch] });
+            }
+            iter++;
+          }
+
+          if(onProgress) onProgress(count, queue.length - head);
+
+          if(head >= queue.length){
+            resolve(null);
+          }else{
+            setTimeout(loop, 0);
+          }
+        };
+
+        loop();
+      });
+    }
+
+    function showHint(){
+      if(solverRunning) return;
+      solverRunning = true;
+      setTimeout(() => {
+        const path = findSolutionBFS(15000);
+        solverRunning = false;
+        if(!path || !path.length){
+          alert("暂时没有找到提示，可能关卡较复杂。");
+          return;
+        }
+        const m = path[0];
+        const text = m === "U" ? "提示：向上移动一步"
+                    : m === "D" ? "提示：向下移动一步"
+                    : m === "L" ? "提示：向左移动一步"
+                    : "提示：向右移动一步";
+        alert(text);
+      }, 50);
+    }
+
+    function setAutoSolveUI(text, loading){
+      const status = document.getElementById("solveStatus");
+      const btn = document.getElementById("autoSolveBtn");
+      if(status) status.textContent = text || "";
+      if(btn){
+        if(loading){
+          btn.classList.add("loading");
+          btn.textContent = solverRunning ? "停止演示" : "自动演示";
+        }else{
+          btn.classList.remove("loading");
+          btn.textContent = "自动演示";
+        }
+      }
+    }
+
+    async function autoSolveCurrent(){
+      if(solverRunning){
+        autoSolveAbort = true;
+        setAutoSolveUI("正在停止…", true);
+        return;
+      }
+
+      solverRunning = true;
+      autoSolveAbort = false;
+      setAutoSolveUI("正在计算路径…", true);
+
+      try{
+        await new Promise(r => setTimeout(r, 30));
+        const path = await findSolutionBFSAsync(180000, 1400, (count, pending) => {
+          if(count % 7000 < 1400){
+            setAutoSolveUI(`计算中：已搜索 ${count} 状态，待处理 ${pending}`, true);
+          }
+        });
+
+        if(!path || !path.length){
+          if(autoSolveAbort){
+            setAutoSolveUI("已停止", false);
+            return;
+          }
+          alert("未找到自动解法，可能关卡太复杂。");
+          setAutoSolveUI("", false);
+          return;
+        }
+
+        setAutoSolveUI(`开始演示：共 ${path.length} 步`, true);
+        for(let i=0;i<path.length;i++){
+          if(autoSolveAbort) break;
+          const step = path[i];
+          if(step === "U") movePlayer(0,-1, {fromAuto:true});
+          if(step === "D") movePlayer(0,1, {fromAuto:true});
+          if(step === "L") movePlayer(-1,0, {fromAuto:true});
+          if(step === "R") movePlayer(1,0, {fromAuto:true});
+          setAutoSolveUI(`演示中：${i+1}/${path.length}`, true);
+          await new Promise(r => setTimeout(r, 120));
+          if(checkWin()) break;
+        }
+
+        if(autoSolveAbort){
+          setAutoSolveUI("已停止", false);
+        }else{
+          setAutoSolveUI("", false);
+        }
+      }finally{
+        solverRunning = false;
+        autoSolveAbort = false;
+        setTimeout(() => {
+          if(!solverRunning) setAutoSolveUI("", false);
+        }, 150);
+      }
+    }
+
+    function getSystemPreferredTheme(){
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    function getSavedThemeMode(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if(saved === "light" || saved === "dark" || saved === "auto") return saved;
+      return "auto";
+    }
+
+    function getEffectiveTheme(mode){
+      if(mode === "auto") return getSystemPreferredTheme();
+      return mode;
+    }
+
+    function themeValueToMode(v){
+      const val = Number(v);
+      if(val === 0) return "light";
+      if(val === 2) return "dark";
+      return "auto";
+    }
+
+    function modeToThemeValue(mode){
+      if(mode === "light") return 0;
+      if(mode === "dark") return 2;
+      return 1;
+    }
+
+    function updateThemeKnobByMode(mode){
+      const value = modeToThemeValue(mode);
+      const shell = document.querySelector(".theme-slider-shell");
+      const knob = document.getElementById("themeKnob");
+      if(!shell || !knob) return;
+      const shellW = shell.clientWidth;
+      const knobW = (shellW / 3) - 6;
+      const left = 4 + value * (shellW / 3);
+      knob.style.left = `${Math.max(4, Math.min(left, shellW - knobW - 4))}px`;
+    }
+
+    function onThemeSliderInput(value){
+      const mode = themeValueToMode(value);
+      applyTheme(mode, true);
+    }
+
+    function setThemeModeByLabel(mode){
+      const slider = document.getElementById("themeSlider");
+      if(slider) slider.value = String(modeToThemeValue(mode));
+      applyTheme(mode, true);
+    }
+
+    function applyTheme(mode, save=true){
+      const effective = getEffectiveTheme(mode);
+      document.documentElement.setAttribute("data-theme", effective);
+      if(save) localStorage.setItem(THEME_KEY, mode);
+      updateThemeControls();
+    }
+
+    function updateThemeControls(){
+      const mode = getSavedThemeMode();
+      const slider = document.getElementById("themeSlider");
+      if(slider) slider.value = String(modeToThemeValue(mode));
+
+      const autoEl = document.getElementById("themeLabelAuto");
+      const lightEl = document.getElementById("themeLabelLight");
+      const darkEl = document.getElementById("themeLabelDark");
+
+      [autoEl, lightEl, darkEl].forEach(el => el && el.classList.remove("active"));
+      if(mode === "auto" && autoEl) autoEl.classList.add("active");
+      if(mode === "light" && lightEl) lightEl.classList.add("active");
+      if(mode === "dark" && darkEl) darkEl.classList.add("active");
+
+      updateThemeKnobByMode(mode);
+    }
+
+    function initTheme(){
+      const savedMode = getSavedThemeMode();
+      applyTheme(savedMode, false);
+
+      if(window.matchMedia){
+        systemThemeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+        const onChange = () => {
+          if(getSavedThemeMode() === "auto") applyTheme("auto", false);
+        };
+
+        if(systemThemeMedia.addEventListener) systemThemeMedia.addEventListener("change", onChange);
+        else if(systemThemeMedia.addListener) systemThemeMedia.addListener(onChange);
+      }
+    }
+
+    function renderSidebarModules(){
+      const container = document.getElementById("sidebarModules");
+      if(!container) return;
+      container.innerHTML = "";
+
+      ["levels","save","editor"].forEach(key => {
+        const tplId = key === "levels" ? "levelsModuleTemplate" : key === "save" ? "saveModuleTemplate" : "editorModuleTemplate";
+        const tpl = document.getElementById(tplId);
+        if(!tpl) return;
+        container.appendChild(tpl.content.cloneNode(true));
+      });
+
+      renderLevelButtons();
+      renderEditorBoard();
+      renderCustomLevelSortList();
+      updateThemeControls();
+      updateControlsTopUI();
+      updateGameAboveLevelsUI();
+    }
+
+    function getSavedControlsTop(){ return localStorage.getItem(CONTROLS_TOP_KEY) === "1"; }
+    function saveControlsTop(){ localStorage.setItem(CONTROLS_TOP_KEY, controlsTop ? "1" : "0"); }
+
+    function applyControlsTop(){
+      const controls = document.getElementById("mobileControls");
+      const topMount = document.getElementById("controlsTopMount");
+      const bottomMount = document.getElementById("controlsBottomMount");
+      if(!controls || !topMount || !bottomMount) return;
+
+      if(controlsTop) topMount.appendChild(controls);
+      else bottomMount.appendChild(controls);
+
+      updateControlsTopUI();
+    }
+
+    function updateControlsTopUI(){
+      const toggle = document.getElementById("controlsTopToggle");
+      if(toggle) toggle.checked = !!controlsTop;
+    }
+
+    function toggleControlsTop(checked){
+      controlsTop = !!checked;
+      saveControlsTop();
+      applyControlsTop();
+      autoSave();
+    }
+
+    function getSavedGameAboveLevels(){ return localStorage.getItem(GAME_ABOVE_LEVELS_KEY) === "1"; }
+    function saveGameAboveLevels(){ localStorage.setItem(GAME_ABOVE_LEVELS_KEY, gameAboveLevels ? "1" : "0"); }
+
+    function updateGameAboveLevelsUI(){
+      const toggle = document.getElementById("gameAboveLevelsToggle");
+      if(toggle) toggle.checked = !!gameAboveLevels;
+    }
+
+    function applyGameAboveLevels(){
+      const gamePanel = document.getElementById("mainGamePanel");
+      const stackedMount = document.getElementById("stackedGameMount");
+      const appRoot = document.getElementById("appRoot");
+      if(!gamePanel || !stackedMount || !appRoot) return;
+
+      if(gameAboveLevels){
+        stackedMount.classList.remove("hidden");
+        stackedMount.appendChild(gamePanel);
+      }else{
+        stackedMount.classList.add("hidden");
+        appRoot.appendChild(gamePanel);
+      }
+
+      updateGameAboveLevelsUI();
+    }
+
+    function toggleGameAboveLevels(checked){
+      gameAboveLevels = !!checked;
+      saveGameAboveLevels();
+      applyGameAboveLevels();
+      autoSave();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key)) e.preventDefault();
+
+      if(key === "arrowup" || key === "w") movePlayer(0,-1);
+      else if(key === "arrowdown" || key === "s") movePlayer(0,1);
+      else if(key === "arrowleft" || key === "a") movePlayer(-1,0);
+      else if(key === "arrowright" || key === "d") movePlayer(1,0);
+      else if(key === "r") restartLevel();
+      else if(key === "z") undoMove();
+      else if(key === "h") showHint();
+      else if(key === "j") autoSolveCurrent();
+    });
+
+    window.addEventListener("resize", () => {
+      render();
+      updateThemeControls();
+    });
+
+    initTheme();
+    initLevelSelect();
+    renderSidebarModules();
+    loadGame();
+  </script>
+</body>
+</html>
