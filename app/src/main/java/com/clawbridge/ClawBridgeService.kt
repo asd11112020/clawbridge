@@ -5,6 +5,8 @@ import android.accessibilityservice.GestureDescription
 import android.content.Intent
 import android.graphics.Path
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.Display
 import android.view.WindowManager
@@ -40,6 +42,30 @@ class ClawBridgeService : AccessibilityService() {
     var screenHeight: Int = 1920
         private set
 
+    // Auto-lock timer — 30 seconds of no touch = lock screen
+    private val autoLockHandler = Handler(Looper.getMainLooper())
+    private val autoLockIntervalMs = 30000L
+    private val autoLockTask = Runnable {
+        android.util.Log.d("ClawBridge", "auto-lock: no touch for 30s, locking screen")
+        performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+    }
+
+    /**
+     * Reset the auto-lock timer. Call after every user-initiated action.
+     * The screen will lock after [autoLockIntervalMs] of inactivity.
+     */
+    fun resetAutoLockTimer() {
+        autoLockHandler.removeCallbacks(autoLockTask)
+        autoLockHandler.postDelayed(autoLockTask, autoLockIntervalMs)
+    }
+
+    /**
+     * Disable the auto-lock timer (e.g. when user explicitly wants the screen on).
+     */
+    fun disableAutoLock() {
+        autoLockHandler.removeCallbacks(autoLockTask)
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
@@ -50,6 +76,8 @@ class ClawBridgeService : AccessibilityService() {
         display?.getRealMetrics(dm)
         screenWidth = dm.widthPixels
         screenHeight = dm.heightPixels
+        // Start the auto-lock timer on service start
+        resetAutoLockTimer()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -74,6 +102,7 @@ class ClawBridgeService : AccessibilityService() {
      * Works on any screen, any app.
      */
     fun tap(x: Float, y: Float) {
+        resetAutoLockTimer()
         val path = Path().apply { moveTo(x, y) }
         val gesture = GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0, 1))
@@ -85,6 +114,7 @@ class ClawBridgeService : AccessibilityService() {
      * Swipe from (x1,y1) to (x2,y2) with configurable duration.
      */
     fun swipe(x1: Float, y1: Float, x2: Float, y2: Float, durationMs: Long = 300) {
+        resetAutoLockTimer()
         val path = Path().apply {
             moveTo(x1, y1)
             lineTo(x2, y2)
@@ -100,6 +130,7 @@ class ClawBridgeService : AccessibilityService() {
      * Falls back to finding any editable node on screen.
      */
     fun setText(text: String) {
+        resetAutoLockTimer()
         val focused = findFocusedEditableNode()
         if (focused != null) {
             val args = Bundle()
@@ -116,6 +147,7 @@ class ClawBridgeService : AccessibilityService() {
      * Press a system key: back, home, recents.
      */
     fun pressKey(key: String): Boolean {
+        resetAutoLockTimer()
         return when (key.lowercase()) {
             "back" -> performGlobalAction(GLOBAL_ACTION_BACK)
             "home" -> performGlobalAction(GLOBAL_ACTION_HOME)
