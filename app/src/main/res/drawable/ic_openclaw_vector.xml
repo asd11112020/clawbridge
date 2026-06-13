@@ -6,69 +6,73 @@
 
     <!-- Body -->
     <path
-        android:pathData="M90,160 C45,160 10,130 10,80 C10,30 45,5 90,5 C135,5 170,30 170,80 C170,130 135,160 90,160 Z"
+        android:pathData="M90,164 C40,164 5,135 5,80 C5,30 40,9 90,9 C140,9 175,30 175,80 C175,135 140,164 90,164 Z"
         android:fillColor="#C83232" />
 
     <!-- Left claw -->
     <path
-        android:pathData="M15,95 C5,85 0,70 10,60 C15,55 25,60 20,75 C18,82 16,90 15,95 Z"
+        android:pathData="M24,93 C15,88 5,78 5,68 C5,60 12,55 20,60 C25,63 28,75 24,93 Z"
         android:fillColor="#E85050" />
 
     <!-- Right claw -->
     <path
-        android:pathData="M165,95 C175,85 180,70 170,60 C165,55 155,60 160,75 C162,82 164,90 165,95 Z"
+        android:pathData="M156,93 C165,88 175,78 175,68 C175,60 168,55 160,60 C155,63 152,75 156,93 Z"
         android:fillColor="#E85050" />
 
-    <!-- Left antenna -->
+    <!-- Left antenna base -->
     <path
-        android:pathData="M65,20 C55,5 40,0 35,5"
-        android:strokeColor="#8B1A1A"
-        android:strokeWidth="3"
+        android:pathData="M64,44 C62,38 60,32 58,28"
+        android:strokeColor="#5A1515"
+        android:strokeWidth="2.5"
         android:fillColor="#00000000" />
-    <path
-        android:pathData="M35,5 C30,8 32,15 38,12 C42,10 40,4 35,5 Z"
-        android:fillColor="#8B1A1A" />
 
-    <!-- Right antenna -->
+    <!-- Left antenna tip -->
     <path
-        android:pathData="M115,20 C125,5 140,0 145,5"
-        android:strokeColor="#8B1A1A"
-        android:strokeWidth="3"
+        android:pathData="M58,28 C54,24 52,28 56,31 C59,33 61,30 58,28 Z"
+        android:fillColor="#5A1515" />
+
+    <!-- Right antenna base -->
+    <path
+        android:pathData="M116,44 C118,38 120,32 122,28"
+        android:strokeColor="#5A1515"
+        android:strokeWidth="2.5"
         android:fillColor="#00000000" />
+
+    <!-- Right antenna tip -->
     <path
-        android:pathData="M145,5 C150,8 148,15 142,12 C138,10 140,4 145,5 Z"
-        android:fillColor="#8B1A1A" />
+        android:pathData="M122,28 C126,24 128,28 124,31 C121,33 119,30 122,28 Z"
+        android:fillColor="#5A1515" />
 
     <!-- Left eye group -->
     <group
         android:name="leftEyeGroup"
-        android:pivotX="63"
+        android:pivotX="68"
         android:pivotY="50"
         android:scaleY="1">
         <path
-            android:pathData="M63,50 C63,44 53,44 53,50 C53,56 63,56 63,50 Z"
+            android:pathData="M68,50 C68,47 64,47 64,50 C64,53 68,53 68,50 Z"
             android:fillColor="#00D4D4" />
     </group>
 
     <!-- Right eye group -->
     <group
         android:name="rightEyeGroup"
-        android:pivotX="108"
+        android:pivotX="113"
         android:pivotY="50"
         android:scaleY="1">
         <path
-            android:pathData="M108,50 C108,44 98,44 98,50 C98,56 108,56 108,50 Z"
+            android:pathData="M113,50 C113,47 109,47 109,50 C109,53 113,53 113,50 Z"
             android:fillColor="#00D4D4" />
     </group>
 
     <!-- Left foot -->
     <path
-        android:pathData="M65,158 L65,172 L75,172 L75,158 Z"
-        android:fillColor="#8B1A1A" />
+        android:pathData="M68,160 L68,166 L81,166 L81,160 Z"
+        android:fillColor="#6B2020" />
 
     <!-- Right foot -->
     <path
-        android:pathData="M105,158 L105,172 L115,172 L115,158 Z"
-        android:fillColor="#8B1A1A" />
+        android:pathData="M98,160 L98,166 L111,166 L111,160 Z"
+        android:fillColor="#6B2020" />
 
 </vector>
