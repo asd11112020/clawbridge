@@ -110,6 +110,7 @@ class ClawBridgeServer(
                 method == "POST" && path == "/swipe" -> swipe(JSONObject(body))
                 method == "POST" && path == "/text" -> setText(JSONObject(body))
                 method == "POST" && path == "/key" -> pressKey(JSONObject(body))
+                method == "POST" && path == "/auto_lock" -> setAutoLock(JSONObject(body))
                 method == "POST" && path == "/find" -> findAndClick(JSONObject(body))
                 method == "GET" && path == "/screenshot" -> takeScreenshot()
                 method == "POST" && path == "/open" -> openApp(JSONObject(body))
@@ -163,6 +164,16 @@ class ClawBridgeServer(
         val key = params.getString("key")
         service.pressKey(key)
         return """{"ok":true}"""
+    }
+
+    private fun setAutoLock(params: JSONObject): String {
+        val enabled = params.optBoolean("enabled", true)
+        if (enabled) {
+            service.resetAutoLockTimer()
+        } else {
+            service.disableAutoLock()
+        }
+        return """{"ok":true,"auto_lock":$enabled}"""
     }
 
     private fun openApp(params: JSONObject): String {
