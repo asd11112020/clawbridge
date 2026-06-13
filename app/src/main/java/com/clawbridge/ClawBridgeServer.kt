@@ -111,6 +111,7 @@ class ClawBridgeServer(
                 method == "POST" && path == "/text" -> setText(JSONObject(body))
                 method == "POST" && path == "/key" -> pressKey(JSONObject(body))
                 method == "POST" && path == "/find" -> findAndClick(JSONObject(body))
+                method == "GET" && path == "/screenshot" -> takeScreenshot()
                 method == "POST" && path == "/open" -> openApp(JSONObject(body))
                 method == "OPTIONS" -> "{}" // CORS preflight
                 else -> """{"ok":false,"error":"unknown_endpoint","path":"$path"}"""
@@ -182,6 +183,25 @@ class ClawBridgeServer(
             """{"ok":true,"package":"$pkg"}"""
         } else {
             """{"ok":false,"error":"app_not_found_or_cannot_launch","package":"$pkg"}"""
+        }
+    }
+
+    private fun takeScreenshot(): String {
+        // Use AccessibilityService context to run screencap
+        val pngBytes = service.takeScreenshotBytes()
+        if (pngBytes == null) {
+            return """{"ok":false,"error":"screenshot_failed"}""".trimIndent()
+        }
+        // Save to a well-known path that OpenClaw can read
+        val file = java.io.File(service.filesDir, "screenshot.png")
+        file.writeBytes(pngBytes)
+        // Also copy to /storage/emulated/0/ for easy access
+        try {
+            val sharedFile = java.io.File("/storage/emulated/0/clawbridge_screenshot.png")
+            sharedFile.writeBytes(pngBytes)
+            return """{"ok":true,"path":"${sharedFile.absolutePath}","size":${pngBytes.size}}""".trimIndent()
+        } catch (_: Exception) {
+            return """{"ok":true,"path":"${file.absolutePath}","size":${pngBytes.size}}""".trimIndent()
         }
     }
 
