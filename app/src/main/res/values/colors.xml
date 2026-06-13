@@ -20,4 +20,5 @@
     <color name="status_dot_green">#FF1A7F37</color>
     <color name="status_dot_red">#FFCF222E</color>
     <color name="status_dot_gray">#FF8C959F</color>
+    <color name="ripple_color">#200969DA</color>
 </resources>

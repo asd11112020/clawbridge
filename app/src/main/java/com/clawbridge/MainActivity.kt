@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.view.View
 import android.view.accessibility.AccessibilityManager
@@ -23,6 +21,7 @@ class MainActivity : Activity() {
     private val serverPort = 9876
     private var server: ClawBridgeServer? = null
     private lateinit var prefs: SharedPreferences
+    private var systemNightMode = 0
 
     private lateinit var dotAccessibility: View
     private lateinit var textAccessibilityStatus: TextView
@@ -37,6 +36,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = getSharedPreferences("clawbridge_prefs", Context.MODE_PRIVATE)
+        systemNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -54,8 +54,8 @@ class MainActivity : Activity() {
         btnServer.setOnClickListener { toggleServer() }
         imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
 
-        val textHowto = findViewById<TextView>(R.id.text_howto)
-        textHowto.setOnLongClickListener {
+        val cardHowto = findViewById<View>(R.id.card_howto)
+        cardHowto.setOnLongClickListener {
             startActivity(Intent(this, GameActivity::class.java))
             true
         }
@@ -92,10 +92,7 @@ class MainActivity : Activity() {
         val targetNightMode = when (themeMode) {
             1 -> Configuration.UI_MODE_NIGHT_NO
             2 -> Configuration.UI_MODE_NIGHT_YES
-            else -> {
-                val sysMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-                sysMode
-            }
+            else -> systemNightMode
         }
 
         if (currentNightMode != targetNightMode) {
