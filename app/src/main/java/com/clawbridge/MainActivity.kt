@@ -53,8 +53,8 @@ class MainActivity : Activity() {
         btnServer.setOnClickListener { toggleServer() }
         imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, themeLabels)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter = ArrayAdapter(this, R.layout.spinner_item, themeLabels)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown)
         spinnerTheme.adapter = adapter
 
         val savedTheme = prefs.getInt("theme_mode", 0)
