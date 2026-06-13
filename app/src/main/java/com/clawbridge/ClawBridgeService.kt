@@ -124,6 +124,7 @@ class ClawBridgeService : AccessibilityService() {
             "quick_settings" -> performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS)
             "power_dialog" -> performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)
             "lock_screen" -> performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+            "screenshot", "sysrq" -> performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)
             else -> false
         }
     }
@@ -264,6 +265,27 @@ class ClawBridgeService : AccessibilityService() {
 
         // Fallback to the default active window
         return rootInActiveWindow
+    }
+
+    /**
+     * Take a screenshot by running /system/bin/screencap.
+     * Runs inside the app process — the shell runs as the app's UID.
+     * Returns raw PNG bytes, or null on failure.
+     */
+    fun takeScreenshotBytes(): ByteArray? {
+        return try {
+            val proc = Runtime.getRuntime().exec("/system/bin/screencap -p")
+            val bytes = proc.inputStream.readBytes()
+            proc.waitFor()
+            if (proc.exitValue() != 0 || bytes.isEmpty()) {
+                android.util.Log.w("ClawBridge", "screencap failed: exit=${proc.exitValue()} size=${bytes.size}")
+                return null
+            }
+            bytes
+        } catch (e: Exception) {
+            android.util.Log.e("ClawBridge", "screencap error", e)
+            null
+        }
     }
 
     /** Get the current root as AccessibilityNodeInfo for reading */
