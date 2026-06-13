@@ -23,6 +23,7 @@ class MainActivity : Activity() {
     private lateinit var textServerStatus: TextView
     private lateinit var btnAccessibility: Button
     private lateinit var btnServer: Button
+    private lateinit var imgLogo: BlinkingLogoView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +35,11 @@ class MainActivity : Activity() {
         textServerStatus = findViewById(R.id.text_server_status)
         btnAccessibility = findViewById(R.id.btn_accessibility)
         btnServer = findViewById(R.id.btn_server)
+        imgLogo = findViewById(R.id.img_logo)
 
         btnAccessibility.setOnClickListener { openAccessibilitySettings() }
         btnServer.setOnClickListener { toggleServer() }
+        imgLogo.setOnClickListener { it as BlinkingLogoView; it.blink() }
     }
 
     override fun onResume() {

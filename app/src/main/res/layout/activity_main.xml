@@ -21,11 +21,13 @@
             android:paddingTop="32dp"
             android:paddingBottom="24dp">
 
-            <ImageView
+            <com.clawbridge.BlinkingLogoView
+                android:id="@+id/img_logo"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:src="@drawable/ic_openclaw"
-                android:contentDescription="OpenClaw" />
+                android:contentDescription="OpenClaw"
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -194,7 +196,7 @@
             style="@style/VersionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="v1.0.0  ·  clawbridge"
+            android:text="v1.1.0  ·  ClawBridge · 苏依珂制作"
             android:paddingBottom="16dp" />
 
     </LinearLayout>
