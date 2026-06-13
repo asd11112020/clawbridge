@@ -1,0 +1,74 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="180dp"
+    android:height="180dp"
+    android:viewportWidth="180"
+    android:viewportHeight="180">
+
+    <!-- Body -->
+    <path
+        android:pathData="M90,160 C45,160 10,130 10,80 C10,30 45,5 90,5 C135,5 170,30 170,80 C170,130 135,160 90,160 Z"
+        android:fillColor="#C83232" />
+
+    <!-- Left claw -->
+    <path
+        android:pathData="M15,95 C5,85 0,70 10,60 C15,55 25,60 20,75 C18,82 16,90 15,95 Z"
+        android:fillColor="#E85050" />
+
+    <!-- Right claw -->
+    <path
+        android:pathData="M165,95 C175,85 180,70 170,60 C165,55 155,60 160,75 C162,82 164,90 165,95 Z"
+        android:fillColor="#E85050" />
+
+    <!-- Left antenna -->
+    <path
+        android:pathData="M65,20 C55,5 40,0 35,5"
+        android:strokeColor="#8B1A1A"
+        android:strokeWidth="3"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M35,5 C30,8 32,15 38,12 C42,10 40,4 35,5 Z"
+        android:fillColor="#8B1A1A" />
+
+    <!-- Right antenna -->
+    <path
+        android:pathData="M115,20 C125,5 140,0 145,5"
+        android:strokeColor="#8B1A1A"
+        android:strokeWidth="3"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M145,5 C150,8 148,15 142,12 C138,10 140,4 145,5 Z"
+        android:fillColor="#8B1A1A" />
+
+    <!-- Left eye group -->
+    <group
+        android:name="leftEyeGroup"
+        android:pivotX="63"
+        android:pivotY="50"
+        android:scaleY="1">
+        <path
+            android:pathData="M63,50 C63,44 53,44 53,50 C53,56 63,56 63,50 Z"
+            android:fillColor="#00D4D4" />
+    </group>
+
+    <!-- Right eye group -->
+    <group
+        android:name="rightEyeGroup"
+        android:pivotX="108"
+        android:pivotY="50"
+        android:scaleY="1">
+        <path
+            android:pathData="M108,50 C108,44 98,44 98,50 C98,56 108,56 108,50 Z"
+            android:fillColor="#00D4D4" />
+    </group>
+
+    <!-- Left foot -->
+    <path
+        android:pathData="M65,158 L65,172 L75,172 L75,158 Z"
+        android:fillColor="#8B1A1A" />
+
+    <!-- Right foot -->
+    <path
+        android:pathData="M105,158 L105,172 L115,172 L115,158 Z"
+        android:fillColor="#8B1A1A" />
+
+</vector>
