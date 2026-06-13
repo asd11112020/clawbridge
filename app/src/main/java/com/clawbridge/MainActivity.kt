@@ -55,25 +55,25 @@ class MainActivity : Activity() {
 
         if (accEnabled) {
             dotAccessibility.setBackgroundResource(R.drawable.dot_green)
-            textAccessibilityStatus.text = "ON"
+            textAccessibilityStatus.text = "已开启"
             textAccessibilityStatus.setTextColor(getColor(R.color.accent_green))
         } else {
             dotAccessibility.setBackgroundResource(R.drawable.dot_red)
-            textAccessibilityStatus.text = "OFF"
+            textAccessibilityStatus.text = "未开启"
             textAccessibilityStatus.setTextColor(getColor(R.color.accent_red))
         }
 
         if (serverRunning) {
             dotServer.setBackgroundResource(R.drawable.dot_green)
-            textServerStatus.text = "RUNNING :$serverPort"
+            textServerStatus.text = "运行中 :$serverPort"
             textServerStatus.setTextColor(getColor(R.color.accent_green))
-            btnServer.text = "Stop Server"
+            btnServer.text = "停止服务"
             btnServer.setBackgroundResource(R.drawable.bg_btn_danger)
         } else {
             dotServer.setBackgroundResource(R.drawable.dot_gray)
-            textServerStatus.text = "STOPPED"
+            textServerStatus.text = "未启动"
             textServerStatus.setTextColor(getColor(R.color.text_hint))
-            btnServer.text = "Start Server  ·  Port $serverPort"
+            btnServer.text = "启动服务  ·  端口 $serverPort"
             btnServer.setBackgroundResource(R.drawable.bg_btn_primary)
         }
     }
@@ -81,20 +81,20 @@ class MainActivity : Activity() {
     private fun toggleServer() {
         if (server?.isRunning == true) {
             server?.stop()
-            Toast.makeText(this, "Server stopped", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "服务已停止", Toast.LENGTH_SHORT).show()
         } else {
             if (!isAccessibilityServiceEnabled()) {
-                Toast.makeText(this, "Enable accessibility service first", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "请先开启无障碍服务", Toast.LENGTH_LONG).show()
                 return
             }
             val service = ClawBridgeService.instance
             if (service == null) {
-                Toast.makeText(this, "Accessibility service not connected", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "无障碍服务未连接，请重新开启", Toast.LENGTH_LONG).show()
                 return
             }
             server = ClawBridgeServer(serverPort, service)
             server?.start()
-            Toast.makeText(this, "Server started on localhost:$serverPort", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "服务已启动 localhost:$serverPort", Toast.LENGTH_SHORT).show()
         }
         updateStatus()
     }
@@ -102,7 +102,7 @@ class MainActivity : Activity() {
     private fun openAccessibilitySettings() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         startActivity(intent)
-        Toast.makeText(this, "Find ClawBridge in the list and enable it", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "请在列表中找到 ClawBridge 并开启", Toast.LENGTH_LONG).show()
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {

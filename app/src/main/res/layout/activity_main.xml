@@ -21,11 +21,11 @@
             android:paddingTop="32dp"
             android:paddingBottom="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🦞"
-                android:textSize="48sp" />
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_openclaw"
+                android:contentDescription="OpenClaw" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -34,12 +34,12 @@
                 android:textSize="28sp"
                 android:textColor="@color/text_primary"
                 android:fontFamily="sans-serif-medium"
-                android:paddingTop="8dp" />
+                android:paddingTop="12dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="OpenClaw Accessibility Bridge"
+                android:text="OpenClaw 无障碍服务桥接"
                 android:textSize="13sp"
                 android:textColor="@color/text_secondary"
                 android:paddingTop="4dp" />
@@ -58,7 +58,7 @@
                 style="@style/SectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status" />
+                android:text="状态" />
 
             <!-- Accessibility Status -->
             <LinearLayout
@@ -79,7 +79,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Accessibility Service"
+                    android:text="无障碍服务"
                     android:textSize="15sp"
                     android:textColor="@color/text_primary"
                     android:paddingStart="12dp"
@@ -89,7 +89,7 @@
                     android:id="@+id/text_accessibility_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="OFF"
+                    android:text="未开启"
                     android:textSize="13sp"
                     android:textColor="@color/accent_red"
                     android:fontFamily="sans-serif-medium" />
@@ -119,7 +119,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="HTTP Server"
+                    android:text="HTTP 服务"
                     android:textSize="15sp"
                     android:textColor="@color/text_primary"
                     android:paddingStart="12dp"
@@ -129,7 +129,7 @@
                     android:id="@+id/text_server_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="STOPPED"
+                    android:text="未启动"
                     android:textSize="13sp"
                     android:textColor="@color/text_hint"
                     android:fontFamily="sans-serif-medium" />
@@ -149,14 +149,14 @@
                 style="@style/SectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Actions" />
+                android:text="操作" />
 
             <Button
                 android:id="@+id/btn_accessibility"
                 style="@style/SecondaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Open Accessibility Settings"
+                android:text="打开无障碍设置"
                 android:layout_marginBottom="10dp" />
 
             <Button
@@ -164,7 +164,7 @@
                 style="@style/PrimaryButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Start Server  ·  Port 9876" />
+                android:text="启动服务  ·  端口 9876" />
         </LinearLayout>
 
         <!-- How to use Card -->
@@ -180,13 +180,13 @@
                 style="@style/SectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="How to use" />
+                android:text="使用方法" />
 
             <TextView
                 style="@style/HintText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1.  Open Accessibility Settings\n2.  Find ClawBridge and enable it\n3.  Return here and start the server\n4.  OpenClaw connects via localhost:9876" />
+                android:text="1.  点击「打开无障碍设置」\n2.  找到 ClawBridge 并开启\n3.  返回本页点击「启动服务」\n4.  OpenClaw 通过 localhost:9876 通信" />
         </LinearLayout>
 
         <!-- Footer -->
