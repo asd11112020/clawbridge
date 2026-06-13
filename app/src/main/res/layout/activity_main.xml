@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🦞"
+                android:textSize="48sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ClawBridge"
+                android:textSize="28sp"
+                android:textColor="@color/text_primary"
+                android:fontFamily="sans-serif-medium"
+                android:paddingTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OpenClaw Accessibility Bridge"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:paddingTop="4dp" />
+        </LinearLayout>
+
+        <!-- Status Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status" />
+
+            <!-- Accessibility Status -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingBottom="12dp">
+
+                <View
+                    android:id="@+id/dot_accessibility"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_red" />
+
+                <TextView
+                    android:id="@+id/text_accessibility_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Accessibility Service"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_primary"
+                    android:paddingStart="12dp"
+                    android:fontFamily="sans-serif" />
+
+                <TextView
+                    android:id="@+id/text_accessibility_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OFF"
+                    android:textSize="13sp"
+                    android:textColor="@color/accent_red"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider" />
+
+            <!-- Server Status -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="12dp">
+
+                <View
+                    android:id="@+id/dot_server"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/dot_gray" />
+
+                <TextView
+                    android:id="@+id/text_server_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="HTTP Server"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_primary"
+                    android:paddingStart="12dp"
+                    android:fontFamily="sans-serif" />
+
+                <TextView
+                    android:id="@+id/text_server_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="STOPPED"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_hint"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Actions Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Actions" />
+
+            <Button
+                android:id="@+id/btn_accessibility"
+                style="@style/SecondaryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Open Accessibility Settings"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/btn_server"
+                style="@style/PrimaryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Start Server  ·  Port 9876" />
+        </LinearLayout>
+
+        <!-- How to use Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                style="@style/SectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="How to use" />
+
+            <TextView
+                style="@style/HintText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1.  Open Accessibility Settings\n2.  Find ClawBridge and enable it\n3.  Return here and start the server\n4.  OpenClaw connects via localhost:9876" />
+        </LinearLayout>
+
+        <!-- Footer -->
+        <TextView
+            style="@style/VersionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="v1.0.0  ·  clawbridge"
+            android:paddingBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

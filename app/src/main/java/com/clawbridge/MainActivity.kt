@@ -5,78 +5,38 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import android.app.Activity
 
-/**
- * Minimal UI — shows service status, lets user enable accessibility,
- * and toggle the HTTP bridge server.
- */
 class MainActivity : Activity() {
 
     private val serverPort = 9876
     private var server: ClawBridgeServer? = null
 
-    private lateinit var statusText: TextView
-    private lateinit var settingsBtn: Button
-    private lateinit var serverBtn: Button
+    private lateinit var dotAccessibility: View
+    private lateinit var textAccessibilityStatus: TextView
+    private lateinit var dotServer: View
+    private lateinit var textServerStatus: TextView
+    private lateinit var btnAccessibility: Button
+    private lateinit var btnServer: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        // Build a simple layout programmatically (no XML layout needed)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(64, 64, 64, 64)
-        }
+        dotAccessibility = findViewById(R.id.dot_accessibility)
+        textAccessibilityStatus = findViewById(R.id.text_accessibility_status)
+        dotServer = findViewById(R.id.dot_server)
+        textServerStatus = findViewById(R.id.text_server_status)
+        btnAccessibility = findViewById(R.id.btn_accessibility)
+        btnServer = findViewById(R.id.btn_server)
 
-        val titleText = TextView(this).apply {
-            text = "🦞 ClawBridge"
-            textSize = 24f
-            setPadding(0, 0, 0, 32)
-        }
-        layout.addView(titleText)
-
-        statusText = TextView(this).apply {
-            text = "检查服务状态..."
-            textSize = 16f
-            setPadding(0, 0, 0, 24)
-        }
-        layout.addView(statusText)
-
-        settingsBtn = Button(this).apply {
-            text = "打开无障碍设置"
-            setOnClickListener { openAccessibilitySettings() }
-        }
-        layout.addView(settingsBtn)
-
-        serverBtn = Button(this).apply {
-            text = "启动服务 (端口 $serverPort)"
-            setOnClickListener { toggleServer() }
-        }
-        layout.addView(serverBtn)
-
-        val hintText = TextView(this).apply {
-            text = """
-                
-使用方法：
-1. 点击「打开无障碍设置」
-2. 找到 ClawBridge 并开启
-3. 回到这里点击「启动服务」
-4. OpenClaw 会通过 localhost:$serverPort 通信
-
-端点为 localhost（仅本机可访问）。
-            """.trimIndent()
-            textSize = 13f
-            setPadding(0, 32, 0, 0)
-        }
-        layout.addView(hintText)
-
-        setContentView(layout)
+        btnAccessibility.setOnClickListener { openAccessibilitySettings() }
+        btnServer.setOnClickListener { toggleServer() }
     }
 
     override fun onResume() {
@@ -93,31 +53,48 @@ class MainActivity : Activity() {
         val accEnabled = isAccessibilityServiceEnabled()
         val serverRunning = server?.isRunning == true
 
-        statusText.text = buildString {
-            append("无障碍: ${if (accEnabled) "✅ 已开启" else "❌ 未开启"}\n")
-            append("服务器: ${if (serverRunning) "🟢 运行中 localhost:$serverPort" else "⚫ 未启动"}")
+        if (accEnabled) {
+            dotAccessibility.setBackgroundResource(R.drawable.dot_green)
+            textAccessibilityStatus.text = "ON"
+            textAccessibilityStatus.setTextColor(getColor(R.color.accent_green))
+        } else {
+            dotAccessibility.setBackgroundResource(R.drawable.dot_red)
+            textAccessibilityStatus.text = "OFF"
+            textAccessibilityStatus.setTextColor(getColor(R.color.accent_red))
         }
 
-        serverBtn.text = if (serverRunning) "停止服务" else "启动服务 (端口 $serverPort)"
+        if (serverRunning) {
+            dotServer.setBackgroundResource(R.drawable.dot_green)
+            textServerStatus.text = "RUNNING :$serverPort"
+            textServerStatus.setTextColor(getColor(R.color.accent_green))
+            btnServer.text = "Stop Server"
+            btnServer.setBackgroundResource(R.drawable.bg_btn_danger)
+        } else {
+            dotServer.setBackgroundResource(R.drawable.dot_gray)
+            textServerStatus.text = "STOPPED"
+            textServerStatus.setTextColor(getColor(R.color.text_hint))
+            btnServer.text = "Start Server  ·  Port $serverPort"
+            btnServer.setBackgroundResource(R.drawable.bg_btn_primary)
+        }
     }
 
     private fun toggleServer() {
         if (server?.isRunning == true) {
             server?.stop()
-            Toast.makeText(this, "服务已停止", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Server stopped", Toast.LENGTH_SHORT).show()
         } else {
             if (!isAccessibilityServiceEnabled()) {
-                Toast.makeText(this, "请先开启无障碍服务", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Enable accessibility service first", Toast.LENGTH_LONG).show()
                 return
             }
             val service = ClawBridgeService.instance
             if (service == null) {
-                Toast.makeText(this, "无障碍服务未连接，请重新开启", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Accessibility service not connected", Toast.LENGTH_LONG).show()
                 return
             }
             server = ClawBridgeServer(serverPort, service)
             server?.start()
-            Toast.makeText(this, "服务已启动 localhost:$serverPort", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Server started on localhost:$serverPort", Toast.LENGTH_SHORT).show()
         }
         updateStatus()
     }
@@ -125,7 +102,7 @@ class MainActivity : Activity() {
     private fun openAccessibilitySettings() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         startActivity(intent)
-        Toast.makeText(this, "请在列表中找到 ClawBridge 并开启", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Find ClawBridge in the list and enable it", Toast.LENGTH_LONG).show()
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
