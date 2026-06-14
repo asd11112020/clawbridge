@@ -8,7 +8,6 @@
     * { box-sizing: border-box; }
 
     :root{
-      color-scheme:light;
       --bg:#f5f7fb;
       --card:#ffffff;
       --line:#e5e7eb;
@@ -37,7 +36,6 @@
     }
 
     html[data-theme="dark"]{
-      color-scheme:dark;
       --bg:#0b1220;
       --card:#111827;
       --line:#263041;
@@ -172,9 +170,7 @@
       background:#f9fafb;
       color:#111827;
       border:1px solid var(--line);
-      transition:background .15s, color .15s, border-color .15s;
-      will-change:background, color;
-    }}
+    }
     html[data-theme="dark"] textarea,
     html[data-theme="dark"] input,
     html[data-theme="dark"] select{
@@ -343,7 +339,7 @@
       padding:10px 12px;
     }
     html[data-theme="dark"] details{
-      background:rgba(127,127,127,.12);
+      background:rgba(30,41,59,.6);
     }
     details summary{
       cursor:pointer;
@@ -456,7 +452,7 @@
     }
     html[data-theme="dark"] .theme-slider-shell{
       border-color:rgba(148,163,184,.50);
-      background:#e2e8f0;
+      background:#c9d1d9;
     }
 
     .theme-knob{
@@ -493,6 +489,7 @@
       background:transparent;
       cursor:pointer;
       z-index:3;
+      color-scheme:light;
     }
     .theme-slider::-webkit-slider-runnable-track{ height:40px; background:transparent; }
     .theme-slider::-webkit-slider-thumb{
@@ -510,11 +507,15 @@
       grid-template-columns:repeat(3,1fr);
       align-items:center;
       text-align:center;
-      z-index:2;
+      z-index:4;
       pointer-events:none;
       font-size:12px;
       font-weight:700;
       letter-spacing:.2px;
+    }
+    html[data-theme="dark"] .theme-slider-inside-labels{
+      background:#d1d5db;
+      border-radius:999px;
     }
 
     .theme-slider-label{
@@ -543,6 +544,52 @@
       color:#0f172a !important;
       background:rgba(0,0,0,.12);
       box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
+    }
+
+    .zoom-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+    }
+    .zoom-row label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--text);
+      white-space:nowrap;
+    }
+    .zoom-row input[type="range"]{
+      flex:1;
+      min-width:0;
+      height:6px;
+      -webkit-appearance:none;
+      appearance:none;
+      background:var(--line);
+      border-radius:3px;
+      outline:none;
+      border:none;
+      padding:0;
+    }
+    .zoom-row input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:18px;height:18px;border-radius:50%;
+      background:var(--primary);
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.18);
+    }
+    .zoom-row input[type="range"]::-moz-range-thumb{
+      width:18px;height:18px;border-radius:50%;
+      background:var(--primary);
+      cursor:pointer;
+      border:none;
+      box-shadow:0 2px 6px rgba(0,0,0,.18);
+    }
+    .zoom-val{
+      font-size:12px;
+      font-weight:700;
+      color:var(--sub);
+      min-width:36px;
+      text-align:right;
     }
 
     .custom-level-head{
@@ -600,6 +647,9 @@
       border:1px solid var(--line);
       border-radius:12px;
       background:rgba(127,127,127,.04);
+    }
+    html[data-theme="dark"] .section-card{
+      background:rgba(30,41,59,.6);
     }
 
     .option-row{
@@ -731,6 +781,12 @@
         </div>
 
         <div class="mini" style="margin-top:12px;">布局设置</div>
+        <div class="zoom-row">
+          <label>缩放</label>
+          <input type="range" id="zoomSlider" min="50" max="300" step="10" value="100"
+                 oninput="onZoomChange(this.value)">
+          <span class="zoom-val" id="zoomVal">100%</span>
+        </div>
         <label class="option-row">
           <span>操作区上移</span>
           <input type="checkbox" id="controlsTopToggle" onchange="toggleControlsTop(this.checked)">
@@ -856,6 +912,7 @@
     const THEME_KEY = "sokoban_theme_mode_v3";
     const CONTROLS_TOP_KEY = "sokoban_controls_top_v1";
     const GAME_ABOVE_LEVELS_KEY = "sokoban_game_above_levels_v1";
+    const ZOOM_KEY = "sokoban_zoom_v1";
 
     const DEFAULT_LEVELS = [
       { id:"builtin_1", name:"入门", difficulty:"★", raw:["#######","#.....#","#..T..#","#..B..#","#..P..#","#.....#","#######"], builtIn:true },
@@ -899,6 +956,7 @@
     let systemThemeMedia = null;
     let controlsTop = false;
     let gameAboveLevels = false;
+    let zoomLevel = 1;
 
     function uid(prefix="id"){
       return prefix + "_" + Math.random().toString(36).slice(2,10) + "_" + Date.now().toString(36);
@@ -1175,7 +1233,8 @@
       const maxByW = Math.floor((availW - gap * Math.max(0, cols - 1)) / cols);
       const maxByH = Math.floor((availH - gap * Math.max(0, rows - 1)) / rows);
 
-      return Math.max(18, Math.min(maxByW, maxByH, 64));
+      const rawFit = Math.max(8, Math.min(maxByW, maxByH));
+      return Math.max(8, Math.min(Math.round(rawFit * zoomLevel), 200));
     }
 
     function render(){
@@ -1404,6 +1463,7 @@
         localStorage.removeItem(THEME_KEY);
         localStorage.removeItem(CONTROLS_TOP_KEY);
         localStorage.removeItem(GAME_ABOVE_LEVELS_KEY);
+        localStorage.removeItem(ZOOM_KEY);
         completedLevels = [];
         bestRecords = {};
         levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
@@ -1412,7 +1472,9 @@
         previewRawLevel = null;
         controlsTop = false;
         gameAboveLevels = false;
+        zoomLevel = 1;
         initTheme();
+        initZoom();
         initLevelSelect();
         renderSidebarModules();
         applyControlsTop();
@@ -1677,6 +1739,7 @@
         JSON.parse(txt);
         localStorage.setItem(STORAGE_KEY, txt);
         loadGame();
+        requestAnimationFrame(() => render());
         alert("存档导入成功！");
       }catch(e){
         alert("存档格式无效！");
@@ -2306,6 +2369,19 @@
       autoSave();
     }
 
+    function getSavedZoom(){
+      const v = parseFloat(localStorage.getItem(ZOOM_KEY));
+      return (v >= 50 && v <= 300) ? v : 100;
+    }
+    function saveZoom(){ localStorage.setItem(ZOOM_KEY, String(Math.round(zoomLevel * 100))); }
+
+    function onZoomChange(val){
+      zoomLevel = Math.max(50, Math.min(300, parseInt(val, 10))) / 100;
+      document.getElementById("zoomVal").textContent = Math.round(zoomLevel * 100) + "%";
+      saveZoom();
+      render();
+    }
+
     document.addEventListener("keydown", (e) => {
       const key = e.key.toLowerCase();
       if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key)) e.preventDefault();
@@ -2326,7 +2402,53 @@
       updateThemeControls();
     });
 
+    function initPinchZoom(){
+      const wrap = document.getElementById("gameBoardWrap");
+      if(!wrap) return;
+      let initialDist = 0;
+      let initialZoom = 1;
+
+      function getDist(t){
+        const dx = t[0].clientX - t[1].clientX;
+        const dy = t[0].clientY - t[1].clientY;
+        return Math.sqrt(dx*dx + dy*dy);
+      }
+
+      wrap.addEventListener("touchstart", (e) => {
+        if(e.touches.length === 2){
+          e.preventDefault();
+          initialDist = getDist(e.touches);
+          initialZoom = zoomLevel;
+        }
+      }, {passive:false});
+
+      wrap.addEventListener("touchmove", (e) => {
+        if(e.touches.length === 2){
+          e.preventDefault();
+          const dist = getDist(e.touches);
+          const scale = dist / initialDist;
+          const newPct = Math.round(initialZoom * scale * 100);
+          const clamped = Math.max(50, Math.min(300, newPct));
+          zoomLevel = clamped / 100;
+          document.getElementById("zoomSlider").value = clamped;
+          document.getElementById("zoomVal").textContent = clamped + "%";
+          saveZoom();
+          render();
+        }
+      }, {passive:false});
+    }
+
+    function initZoom(){
+      zoomLevel = getSavedZoom() / 100;
+      const slider = document.getElementById("zoomSlider");
+      const label = document.getElementById("zoomVal");
+      if(slider) slider.value = Math.round(zoomLevel * 100);
+      if(label) label.textContent = Math.round(zoomLevel * 100) + "%";
+      initPinchZoom();
+    }
+
     initTheme();
+    initZoom();
     initLevelSelect();
     renderSidebarModules();
     loadGame();
