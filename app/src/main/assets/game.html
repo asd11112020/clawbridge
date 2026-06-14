@@ -8,6 +8,7 @@
     * { box-sizing: border-box; }
 
     :root{
+      color-scheme:light;
       --bg:#f5f7fb;
       --card:#ffffff;
       --line:#e5e7eb;
@@ -36,7 +37,8 @@
     }
 
     html[data-theme="dark"]{
-      --bg:#0f172a;
+      color-scheme:dark;
+      --bg:#0b1220;
       --card:#111827;
       --line:#263041;
       --text:#e5e7eb;
@@ -64,7 +66,6 @@
       color:var(--text);
       font-family:"Microsoft YaHei",Arial,sans-serif;
       padding:16px;
-      transition:background .2s,color .2s;
     }
 
     .app{
@@ -80,6 +81,7 @@
       border:1px solid var(--line);
       border-radius:18px;
       box-shadow:var(--shadow);
+      transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
     }
 
     .panel{ padding:16px; }
@@ -170,13 +172,19 @@
       background:#f9fafb;
       color:#111827;
       border:1px solid var(--line);
-    }
+      transition:background .15s, color .15s, border-color .15s;
+      will-change:background, color;
+    }}
     html[data-theme="dark"] textarea,
     html[data-theme="dark"] input,
     html[data-theme="dark"] select{
       background:#0f172a;
       color:#e5e7eb;
       border:1px solid var(--line);
+    }
+    html[data-theme="dark"] option{
+      background:#1e293b;
+      color:#e5e7eb;
     }
 
     .topbar{
@@ -219,7 +227,7 @@
       border-radius:16px;
       padding:10px;
       min-height:120px;
-      overflow:hidden;
+      overflow:auto;
       width:100%;
       margin-inline:auto;
     }
@@ -325,6 +333,7 @@
     html[data-theme="dark"] .level-btn{ background:#273449; color:#e5e7eb; }
     .level-btn.active{ background:#3b82f6; color:#fff; }
     .level-btn.done{ background:#16a34a; color:#fff; }
+    html[data-theme="dark"] .level-btn.done{ background:#22c55e; color:#fff; }
 
     details{
       margin-top:12px;
@@ -447,7 +456,7 @@
     }
     html[data-theme="dark"] .theme-slider-shell{
       border-color:rgba(148,163,184,.50);
-      background:linear-gradient(90deg, rgba(51,65,85,.65) 0%, rgba(30,41,59,.70) 50%, rgba(30,41,59,.75) 100%);
+      background:#e2e8f0;
     }
 
     .theme-knob{
@@ -520,7 +529,7 @@
       text-shadow:0 1px 0 rgba(255,255,255,.55);
     }
     html[data-theme="dark"] .theme-slider-label{
-      color:#e2e8f0;
+      color:#111827;
       text-shadow:none;
     }
 
@@ -531,9 +540,9 @@
       transform:translateY(-.5px);
     }
     html[data-theme="dark"] .theme-slider-label.active{
-      color:#f8fafc !important;
-      background:rgba(148,163,184,.30);
-      box-shadow:inset 0 0 0 1px rgba(148,163,184,.40);
+      color:#0f172a !important;
+      background:rgba(0,0,0,.12);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
     }
 
     .custom-level-head{
@@ -2279,7 +2288,7 @@
       const appRoot = document.getElementById("appRoot");
       if(!gamePanel || !stackedMount || !appRoot) return;
 
-      if(gameAboveLevels){
+      if(gameAboveLevels && window.innerWidth <= 980){
         stackedMount.classList.remove("hidden");
         stackedMount.appendChild(gamePanel);
       }else{
@@ -2312,6 +2321,7 @@
     });
 
     window.addEventListener("resize", () => {
+      applyGameAboveLevels();
       render();
       updateThemeControls();
     });
