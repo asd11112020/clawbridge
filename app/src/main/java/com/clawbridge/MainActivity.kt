@@ -58,9 +58,38 @@ class MainActivity : Activity() {
         btnServer.setOnClickListener { toggleServer() }
         imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
 
+        val textStatusTitle = findViewById<TextView>(R.id.text_status_title)
+        val shimmerOverlay = findViewById<View>(R.id.shimmer_overlay)
+        textStatusTitle.setOnClickListener {
+            val cardStatus = findViewById<View>(R.id.card_status)
+            val cardWidth = cardStatus.width
+            shimmerOverlay.translationX = -60f
+            shimmerOverlay.visibility = View.VISIBLE
+            val shimmer = android.animation.ObjectAnimator.ofFloat(shimmerOverlay, "translationX", -60f, cardWidth.toFloat()).setDuration(400)
+            shimmer.interpolator = android.view.animation.LinearInterpolator()
+            shimmer.addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    shimmerOverlay.visibility = View.GONE
+                }
+            })
+            shimmer.start()
+            pulseDot(dotAccessibility)
+            pulseDot(dotServer)
+        }
+
         val cardHowto = findViewById<View>(R.id.card_howto)
-        cardHowto.setOnLongClickListener {
+        val longPressRunnable = Runnable {
             startActivity(Intent(this, GameActivity::class.java))
+        }
+        cardHowto.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.postDelayed(longPressRunnable, 500)
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.removeCallbacks(longPressRunnable)
+                }
+            }
             true
         }
 
@@ -185,5 +214,14 @@ class MainActivity : Activity() {
         return enabledServices.any {
             it.resolveInfo.serviceInfo.packageName == packageName
         }
+    }
+
+    private fun pulseDot(dot: View) {
+        val scaleX = android.animation.ObjectAnimator.ofFloat(dot, "scaleX", 1f, 1.6f, 1f).setDuration(350)
+        val scaleY = android.animation.ObjectAnimator.ofFloat(dot, "scaleY", 1f, 1.6f, 1f).setDuration(350)
+        scaleX.startDelay = 80
+        scaleY.startDelay = 80
+        scaleX.start()
+        scaleY.start()
     }
 }
