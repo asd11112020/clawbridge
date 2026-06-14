@@ -30,14 +30,13 @@
       --shadow:0 8px 24px rgba(15,23,42,.08);
 
       --cell-size:42px;
-      --board-max-w:100%;
       --desktop-sidebar:300px;
       --desktop-gap:16px;
       --theme-knob-left:4px;
     }
 
     html[data-theme="dark"]{
-      --bg:#0f172a;
+      --bg:#0b1220;
       --card:#111827;
       --line:#263041;
       --text:#e5e7eb;
@@ -65,7 +64,6 @@
       color:var(--text);
       font-family:"Microsoft YaHei",Arial,sans-serif;
       padding:16px;
-      transition:background .2s,color .2s;
     }
 
     .app{
@@ -81,6 +79,7 @@
       border:1px solid var(--line);
       border-radius:18px;
       box-shadow:var(--shadow);
+      transition:background .15s, color .15s, border-color .15s, box-shadow .15s;
     }
 
     .panel{ padding:16px; }
@@ -179,6 +178,10 @@
       color:#e5e7eb;
       border:1px solid var(--line);
     }
+    html[data-theme="dark"] option{
+      background:#1e293b;
+      color:#e5e7eb;
+    }
 
     .topbar{
       display:flex;
@@ -219,9 +222,8 @@
       border:1px solid var(--line);
       border-radius:16px;
       padding:10px;
-      min-height:360px;
+      min-height:120px;
       overflow:auto;
-      max-width: var(--board-max-w);
       width:100%;
       margin-inline:auto;
     }
@@ -240,6 +242,7 @@
       height:var(--cell-size);
       border-radius:8px;
       position:relative;
+      overflow:hidden;
       transition:transform .14s ease;
     }
 
@@ -249,29 +252,29 @@
     .target::after{
       content:"";
       position:absolute;
-      width:14px;height:14px;
+      width:33%;height:33%;
       border-radius:50%;
       background:var(--target);
       top:50%;left:50%;
       transform:translate(-50%,-50%);
-      box-shadow:0 0 0 5px rgba(239,68,68,.12);
+      box-shadow:0 0 0 12% rgba(239,68,68,.12);
     }
 
     .box::before{
       content:"";
       position:absolute;
-      inset:6px;
-      border-radius:8px;
+      inset:14%;
+      border-radius:20%;
       background:linear-gradient(135deg,var(--box),var(--box2));
-      box-shadow:inset 0 -4px 0 rgba(0,0,0,.12);
+      box-shadow:inset 0 -10% 0 rgba(0,0,0,.12);
     }
     .box.on-target::before{ background:linear-gradient(135deg,#22c55e,#15803d); }
 
     .player::before{
       content:"";
       position:absolute;
-      width:24px;height:24px;border-radius:50%;
-      top:9px;left:9px;
+      width:57%;height:57%;border-radius:50%;
+      top:21.5%;left:21.5%;
       background:linear-gradient(135deg,var(--player2),var(--player));
     }
 
@@ -326,6 +329,7 @@
     html[data-theme="dark"] .level-btn{ background:#273449; color:#e5e7eb; }
     .level-btn.active{ background:#3b82f6; color:#fff; }
     .level-btn.done{ background:#16a34a; color:#fff; }
+    html[data-theme="dark"] .level-btn.done{ background:#22c55e; color:#fff; }
 
     details{
       margin-top:12px;
@@ -334,10 +338,14 @@
       border-radius:14px;
       padding:10px 12px;
     }
+    html[data-theme="dark"] details{
+      background:rgba(30,41,59,.6);
+    }
     details summary{
       cursor:pointer;
       font-weight:700;
       user-select:none;
+      color:var(--text);
     }
 
     .mini{
@@ -368,25 +376,25 @@
     }
 
     .editor-cell{
-      width:28px;height:28px;border-radius:6px;cursor:pointer;position:relative;
-      border:1px solid rgba(0,0,0,.05);
+      border-radius:6px;cursor:pointer;position:relative;
+      border:1px solid rgba(0,0,0,.05);overflow:hidden;
     }
     .editor-floor{ background:var(--floor); }
     .editor-wall{ background:linear-gradient(135deg,#475569,#334155); }
     .editor-target{ background:var(--floor); }
     .editor-target::after{
-      content:""; position:absolute; width:10px;height:10px;border-radius:50%;
+      content:""; position:absolute; width:36%;height:36%;border-radius:50%;
       background:#ef4444; top:50%;left:50%; transform:translate(-50%,-50%);
     }
     .editor-box{ background:var(--floor); }
     .editor-box::before{
-      content:""; position:absolute; inset:4px; border-radius:6px;
+      content:""; position:absolute; inset:14%; border-radius:16%;
       background:linear-gradient(135deg,#c0841a,#8a5a13);
     }
     .editor-player{ background:var(--floor); }
     .editor-player::before{
-      content:""; position:absolute; width:16px;height:16px;border-radius:50%;
-      background:linear-gradient(135deg,#38bdf8,#2563eb); top:5px;left:5px;
+      content:""; position:absolute; width:50%;height:50%;border-radius:50%;
+      background:linear-gradient(135deg,#38bdf8,#2563eb); top:25%;left:25%;
     }
 
     #confetti{
@@ -428,7 +436,7 @@
     }
     html[data-theme="dark"] .theme-slider-wrap{
       border:1px solid rgba(148,163,184,.32);
-      background:linear-gradient(135deg, rgba(51,65,85,.38), rgba(15,23,42,.66));
+      background:linear-gradient(135deg, rgba(51,65,85,.50), rgba(30,41,59,.70));
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.08),
         0 12px 28px rgba(0,0,0,.36);
@@ -443,8 +451,8 @@
       background:linear-gradient(90deg, rgba(248,250,252,.78) 0%, rgba(241,245,249,.72) 50%, rgba(226,232,240,.74) 100%);
     }
     html[data-theme="dark"] .theme-slider-shell{
-      border-color:rgba(148,163,184,.42);
-      background:linear-gradient(90deg, rgba(51,65,85,.55) 0%, rgba(30,41,59,.60) 50%, rgba(15,23,42,.65) 100%);
+      border-color:rgba(148,163,184,.50);
+      background:#c9d1d9;
     }
 
     .theme-knob{
@@ -481,6 +489,7 @@
       background:transparent;
       cursor:pointer;
       z-index:3;
+      color-scheme:light;
     }
     .theme-slider::-webkit-slider-runnable-track{ height:40px; background:transparent; }
     .theme-slider::-webkit-slider-thumb{
@@ -498,11 +507,15 @@
       grid-template-columns:repeat(3,1fr);
       align-items:center;
       text-align:center;
-      z-index:2;
+      z-index:4;
       pointer-events:none;
       font-size:12px;
       font-weight:700;
       letter-spacing:.2px;
+    }
+    html[data-theme="dark"] .theme-slider-inside-labels{
+      background:#d1d5db;
+      border-radius:999px;
     }
 
     .theme-slider-label{
@@ -517,8 +530,8 @@
       text-shadow:0 1px 0 rgba(255,255,255,.55);
     }
     html[data-theme="dark"] .theme-slider-label{
-      color:#f1f5f9;
-      text-shadow:0 1px 2px rgba(0,0,0,.65);
+      color:#111827;
+      text-shadow:none;
     }
 
     .theme-slider-label.active{
@@ -528,9 +541,55 @@
       transform:translateY(-.5px);
     }
     html[data-theme="dark"] .theme-slider-label.active{
-      color:#f8fafc !important;
-      background:rgba(148,163,184,.20);
-      box-shadow:inset 0 0 0 1px rgba(148,163,184,.28);
+      color:#0f172a !important;
+      background:rgba(0,0,0,.12);
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
+    }
+
+    .zoom-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+    }
+    .zoom-row label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--text);
+      white-space:nowrap;
+    }
+    .zoom-row input[type="range"]{
+      flex:1;
+      min-width:0;
+      height:6px;
+      -webkit-appearance:none;
+      appearance:none;
+      background:var(--line);
+      border-radius:3px;
+      outline:none;
+      border:none;
+      padding:0;
+    }
+    .zoom-row input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:18px;height:18px;border-radius:50%;
+      background:var(--primary);
+      cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.18);
+    }
+    .zoom-row input[type="range"]::-moz-range-thumb{
+      width:18px;height:18px;border-radius:50%;
+      background:var(--primary);
+      cursor:pointer;
+      border:none;
+      box-shadow:0 2px 6px rgba(0,0,0,.18);
+    }
+    .zoom-val{
+      font-size:12px;
+      font-weight:700;
+      color:var(--sub);
+      min-width:36px;
+      text-align:right;
     }
 
     .custom-level-head{
@@ -589,6 +648,9 @@
       border-radius:12px;
       background:rgba(127,127,127,.04);
     }
+    html[data-theme="dark"] .section-card{
+      background:rgba(30,41,59,.6);
+    }
 
     .option-row{
       margin-top:10px;
@@ -613,10 +675,6 @@
     @media (max-width:980px){
       .app{ grid-template-columns:1fr; }
     }
-    @media (max-width:860px){
-      .player::before{ width:20px;height:20px;top:7px;left:7px; }
-    }
-
     @media (max-width:640px){
       .topbar{
         flex-direction:column;
@@ -637,7 +695,6 @@
       :root{
         --desktop-sidebar:340px;
         --desktop-gap:20px;
-        --board-max-w:1080px;
       }
       .app{
         max-width:1500px;
@@ -647,7 +704,6 @@
       .panel,.game-panel{ border-radius:20px; }
       .panel{ padding:18px; }
       .game-panel{ padding:18px; }
-      #gameBoardWrap{ min-height:460px; }
       .level-list{ grid-template-columns:repeat(auto-fill,minmax(48px,1fr)); }
     }
 
@@ -655,29 +711,23 @@
       :root{
         --desktop-sidebar:360px;
         --desktop-gap:22px;
-        --board-max-w:1180px;
       }
       .app{ max-width:1720px; }
-      #gameBoardWrap{ min-height:520px; }
     }
 
     @media (min-width:1920px){
       :root{
         --desktop-sidebar:400px;
         --desktop-gap:24px;
-        --board-max-w:1240px;
       }
       .app{ max-width:1960px; }
       #builtinLevelButtons,#customLevelButtons{
         grid-template-columns:repeat(6,minmax(44px,1fr));
       }
-      #gameBoardWrap{ min-height:560px; }
     }
 
     @media (min-width:2560px){
-      :root{ --board-max-w:1280px; }
       .app{ max-width:2260px; }
-      #gameBoardWrap{ min-height:600px; }
     }
   </style>
 </head>
@@ -731,6 +781,12 @@
         </div>
 
         <div class="mini" style="margin-top:12px;">布局设置</div>
+        <div class="zoom-row">
+          <label>缩放</label>
+          <input type="range" id="zoomSlider" min="50" max="300" step="10" value="100"
+                 oninput="onZoomChange(this.value)">
+          <span class="zoom-val" id="zoomVal">100%</span>
+        </div>
         <label class="option-row">
           <span>操作区上移</span>
           <input type="checkbox" id="controlsTopToggle" onchange="toggleControlsTop(this.checked)">
@@ -826,8 +882,8 @@
       <summary>地图编辑器</summary>
       <div class="mini">点击工具后在网格上绘制。要求至少 1 个玩家、1 个箱子、1 个目标点，且箱子数=目标数。</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
-        <input type="number" id="editorW" min="5" max="20" value="8" placeholder="宽">
-        <input type="number" id="editorH" min="5" max="20" value="8" placeholder="高">
+        <input type="number" id="editorW" min="5" max="30" value="8" placeholder="宽">
+        <input type="number" id="editorH" min="5" max="30" value="8" placeholder="高">
       </div>
       <div class="buttons">
         <button class="secondary" onclick="createEditorBoard()">新建画布</button>
@@ -856,6 +912,7 @@
     const THEME_KEY = "sokoban_theme_mode_v3";
     const CONTROLS_TOP_KEY = "sokoban_controls_top_v1";
     const GAME_ABOVE_LEVELS_KEY = "sokoban_game_above_levels_v1";
+    const ZOOM_KEY = "sokoban_zoom_v1";
 
     const DEFAULT_LEVELS = [
       { id:"builtin_1", name:"入门", difficulty:"★", raw:["#######","#.....#","#..T..#","#..B..#","#..P..#","#.....#","#######"], builtIn:true },
@@ -899,6 +956,7 @@
     let systemThemeMedia = null;
     let controlsTop = false;
     let gameAboveLevels = false;
+    let zoomLevel = 1;
 
     function uid(prefix="id"){
       return prefix + "_" + Math.random().toString(36).slice(2,10) + "_" + Date.now().toString(36);
@@ -1159,25 +1217,24 @@
       return `扩展 ${no} · ${lv.name}`;
     }
 
-    function getBoardWidthCap(){
-      const w = window.innerWidth;
-      if(w >= 2560) return 1280;
-      if(w >= 1920) return 1240;
-      if(w >= 1440) return 1180;
-      if(w >= 981)  return 1080;
-      return Infinity;
-    }
+    function getCellSizeByContainer(cols, rows){
+      const wrap = document.getElementById("gameBoardWrap");
+      if(!wrap) return 42;
 
-    function getCellSizeByViewport(cols){
-      const w = window.innerWidth;
-      if(w <= 860) return 34;
-      if(w <= 980) return 42;
-      let base = 48;
-      if(w >= 1440) base = 52;
-      if(w >= 1920) base = 56;
-      const cap = getBoardWidthCap();
-      const maxByCap = Number.isFinite(cap) ? Math.floor((cap - (cols - 1) * 2 - 20) / cols) : base;
-      return Math.max(34, Math.min(base, maxByCap));
+      const cs = getComputedStyle(wrap);
+      const padX = (parseFloat(cs.paddingLeft)||10) + (parseFloat(cs.paddingRight)||10);
+      const availW = wrap.clientWidth - padX;
+
+      const rect = wrap.getBoundingClientRect();
+      const bottomReserve = window.innerWidth <= 640 ? 220 : 100;
+      const availH = Math.max(200, window.innerHeight - rect.top - bottomReserve);
+
+      const gap = 2;
+      const maxByW = Math.floor((availW - gap * Math.max(0, cols - 1)) / cols);
+      const maxByH = Math.floor((availH - gap * Math.max(0, rows - 1)) / rows);
+
+      const rawFit = Math.max(8, Math.min(maxByW, maxByH));
+      return Math.max(8, Math.min(Math.round(rawFit * zoomLevel), 200));
     }
 
     function render(){
@@ -1188,14 +1245,10 @@
       gameBoard.innerHTML = "";
 
       const cols = board[0].length;
-      const size = getCellSizeByViewport(cols);
+      const rows = board.length;
+      const size = getCellSizeByContainer(cols, rows);
       gameBoard.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
       document.documentElement.style.setProperty("--cell-size", `${size}px`);
-
-      if(gameBoardWrap){
-        const cap = getBoardWidthCap();
-        gameBoardWrap.style.maxWidth = Number.isFinite(cap) ? `${cap}px` : "100%";
-      }
 
       for(let y=0;y<board.length;y++){
         for(let x=0;x<board[y].length;x++){
@@ -1410,6 +1463,7 @@
         localStorage.removeItem(THEME_KEY);
         localStorage.removeItem(CONTROLS_TOP_KEY);
         localStorage.removeItem(GAME_ABOVE_LEVELS_KEY);
+        localStorage.removeItem(ZOOM_KEY);
         completedLevels = [];
         bestRecords = {};
         levels = DEFAULT_LEVELS.map(l => ({...l, raw:[...l.raw]}));
@@ -1418,7 +1472,9 @@
         previewRawLevel = null;
         controlsTop = false;
         gameAboveLevels = false;
+        zoomLevel = 1;
         initTheme();
+        initZoom();
         initLevelSelect();
         renderSidebarModules();
         applyControlsTop();
@@ -1683,6 +1739,7 @@
         JSON.parse(txt);
         localStorage.setItem(STORAGE_KEY, txt);
         loadGame();
+        requestAnimationFrame(() => render());
         alert("存档导入成功！");
       }catch(e){
         alert("存档格式无效！");
@@ -1700,8 +1757,8 @@
     function createEditorBoard(){
       const wEl = document.getElementById("editorW");
       const hEl = document.getElementById("editorH");
-      const w = Math.max(5, Math.min(20, parseInt(wEl?.value,10) || 8));
-      const h = Math.max(5, Math.min(20, parseInt(hEl?.value,10) || 8));
+      const w = Math.max(5, Math.min(30, parseInt(wEl?.value,10) || 8));
+      const h = Math.max(5, Math.min(30, parseInt(hEl?.value,10) || 8));
       editorMap = Array.from({length:h}, (_,y) =>
         Array.from({length:w}, (_,x) => (x===0 || y===0 || x===w-1 || y===h-1) ? "#" : ".")
       );
@@ -1723,13 +1780,23 @@
       if(!box) return;
       if(!editorMap.length) createEditorBoard();
       box.innerHTML = "";
-      box.style.gridTemplateColumns = `repeat(${editorMap[0].length}, 28px)`;
+
+      const cols = editorMap[0].length;
+      const cs = getComputedStyle(box);
+      const padX = (parseFloat(cs.paddingLeft)||8) + (parseFloat(cs.paddingRight)||8);
+      const availW = box.clientWidth - padX || (box.parentElement?.clientWidth || 300) - 40;
+      const gap = 2;
+      const cellSize = Math.max(12, Math.min(28, Math.floor((availW - gap * (cols - 1)) / cols)));
+
+      box.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
 
       for(let y=0;y<editorMap.length;y++){
         for(let x=0;x<editorMap[y].length;x++){
           const c = editorMap[y][x];
           const div = document.createElement("div");
           div.className = "editor-cell " + editorCellClass(c);
+          div.style.width = cellSize + "px";
+          div.style.height = cellSize + "px";
           div.onclick = () => paintEditorCell(x,y);
           box.appendChild(div);
         }
@@ -2284,7 +2351,7 @@
       const appRoot = document.getElementById("appRoot");
       if(!gamePanel || !stackedMount || !appRoot) return;
 
-      if(gameAboveLevels){
+      if(gameAboveLevels && window.innerWidth <= 980){
         stackedMount.classList.remove("hidden");
         stackedMount.appendChild(gamePanel);
       }else{
@@ -2302,6 +2369,19 @@
       autoSave();
     }
 
+    function getSavedZoom(){
+      const v = parseFloat(localStorage.getItem(ZOOM_KEY));
+      return (v >= 50 && v <= 300) ? v : 100;
+    }
+    function saveZoom(){ localStorage.setItem(ZOOM_KEY, String(Math.round(zoomLevel * 100))); }
+
+    function onZoomChange(val){
+      zoomLevel = Math.max(50, Math.min(300, parseInt(val, 10))) / 100;
+      document.getElementById("zoomVal").textContent = Math.round(zoomLevel * 100) + "%";
+      saveZoom();
+      render();
+    }
+
     document.addEventListener("keydown", (e) => {
       const key = e.key.toLowerCase();
       if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key)) e.preventDefault();
@@ -2317,11 +2397,58 @@
     });
 
     window.addEventListener("resize", () => {
+      applyGameAboveLevels();
       render();
       updateThemeControls();
     });
 
+    function initPinchZoom(){
+      const wrap = document.getElementById("gameBoardWrap");
+      if(!wrap) return;
+      let initialDist = 0;
+      let initialZoom = 1;
+
+      function getDist(t){
+        const dx = t[0].clientX - t[1].clientX;
+        const dy = t[0].clientY - t[1].clientY;
+        return Math.sqrt(dx*dx + dy*dy);
+      }
+
+      wrap.addEventListener("touchstart", (e) => {
+        if(e.touches.length === 2){
+          e.preventDefault();
+          initialDist = getDist(e.touches);
+          initialZoom = zoomLevel;
+        }
+      }, {passive:false});
+
+      wrap.addEventListener("touchmove", (e) => {
+        if(e.touches.length === 2){
+          e.preventDefault();
+          const dist = getDist(e.touches);
+          const scale = dist / initialDist;
+          const newPct = Math.round(initialZoom * scale * 100);
+          const clamped = Math.max(50, Math.min(300, newPct));
+          zoomLevel = clamped / 100;
+          document.getElementById("zoomSlider").value = clamped;
+          document.getElementById("zoomVal").textContent = clamped + "%";
+          saveZoom();
+          render();
+        }
+      }, {passive:false});
+    }
+
+    function initZoom(){
+      zoomLevel = getSavedZoom() / 100;
+      const slider = document.getElementById("zoomSlider");
+      const label = document.getElementById("zoomVal");
+      if(slider) slider.value = Math.round(zoomLevel * 100);
+      if(label) label.textContent = Math.round(zoomLevel * 100) + "%";
+      initPinchZoom();
+    }
+
     initTheme();
+    initZoom();
     initLevelSelect();
     renderSidebarModules();
     loadGame();

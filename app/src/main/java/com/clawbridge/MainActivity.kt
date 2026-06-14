@@ -36,7 +36,11 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = getSharedPreferences("clawbridge_prefs", Context.MODE_PRIVATE)
-        systemNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (!prefs.contains("system_night_mode")) {
+            val sysMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            prefs.edit().putInt("system_night_mode", sysMode).apply()
+        }
+        systemNightMode = prefs.getInt("system_night_mode", Configuration.UI_MODE_NIGHT_NO)
         applyTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
