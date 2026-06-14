@@ -7,4 +7,5 @@
     android:textSize="15sp"
     android:textColor="@color/text_primary"
     android:background="@color/bg_card"
-    android:singleLine="true" />
+    android:singleLine="true"
+    android:gravity="center" />

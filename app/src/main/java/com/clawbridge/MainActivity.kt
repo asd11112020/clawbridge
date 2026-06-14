@@ -59,17 +59,16 @@ class MainActivity : Activity() {
         imgLogo.setOnClickListener { (it as BlinkingLogoView).blink() }
 
         val textStatusTitle = findViewById<TextView>(R.id.text_status_title)
-        val shimmerOverlay = findViewById<View>(R.id.shimmer_overlay)
+        val shimmerText = findViewById<View>(R.id.shimmer_text)
         textStatusTitle.setOnClickListener {
-            val cardStatus = findViewById<View>(R.id.card_status)
-            val cardWidth = cardStatus.width
-            shimmerOverlay.translationX = -60f
-            shimmerOverlay.visibility = View.VISIBLE
-            val shimmer = android.animation.ObjectAnimator.ofFloat(shimmerOverlay, "translationX", -60f, cardWidth.toFloat()).setDuration(400)
+            val titleWidth = textStatusTitle.width
+            shimmerText.translationX = -30f
+            shimmerText.visibility = View.VISIBLE
+            val shimmer = android.animation.ObjectAnimator.ofFloat(shimmerText, "translationX", -30f, (titleWidth + 10).toFloat()).setDuration(350)
             shimmer.interpolator = android.view.animation.LinearInterpolator()
             shimmer.addListener(object : android.animation.AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: android.animation.Animator) {
-                    shimmerOverlay.visibility = View.GONE
+                    shimmerText.visibility = View.GONE
                 }
             })
             shimmer.start()
@@ -84,7 +83,7 @@ class MainActivity : Activity() {
         cardHowto.setOnTouchListener { v, event ->
             when (event.action) {
                 android.view.MotionEvent.ACTION_DOWN -> {
-                    v.postDelayed(longPressRunnable, 500)
+                    v.postDelayed(longPressRunnable, 200)
                 }
                 android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
                     v.removeCallbacks(longPressRunnable)
